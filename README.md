@@ -45,37 +45,3 @@ You can switch it with:
 :BuildDebug
 :BuildRelease
 ```
-# Building process
-
-## What i have to do
-
-
-
-- [x] **Implement a vim command for Debug/Release target**  
-    - [x] ``:BuildDebug``:
-    - [x] ``:BuildRelease``:
-- [ ] **Resolve problems**
-    - [x]  ``:CMakeGenerate``: Generator script not found: /path/to/cmake-cpp-init.sh
-    - [ ]   Not prompting the for project
-    - [ ]   Not generating correctly, and missing the CMakelists.txt
-    - [ ]   
-- [ ] **Turn it into a plugin instead**
-    - [ ]   
-    - [ ]   
-- [ ] **Add vim commands for the currently "key binding only functionalities"**
-    - [ ]   First change key bindings into vim commands;
-    - [ ]   Call the vim commands with key bindings as needed
-- [ ] **Implement **
-    - [ ]   
-    - [ ]   
-- [ ] **Implement **
-    - [ ]   
-    - [ ]   
-- [ ] **Implement **
-    - [ ]   
-    - [ ]   
-- [ ] **Implement **
-    - [ ]   
-    - [ ]   
-
-
