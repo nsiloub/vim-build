@@ -2,6 +2,8 @@
 " VIM-BUILD
 " =========================
 
+let s:plugin_dir = fnamemodify(expand('<sfile>:p'), ':h')
+
 function! ToggleQuickFix()
   if empty(filter(getwininfo(), 'v:val.quickfix'))
     copen
@@ -12,7 +14,6 @@ function! ToggleQuickFix()
 endfunction
 
 nnoremap <C-b> :call ToggleQuickFix()<CR>
-
 
 function! s:IsCMakeProject(dir) abort
   return filereadable(a:dir . '/CMakeLists.txt')
@@ -48,7 +49,6 @@ command! BuildDebug   call <SID>SetBuildMode('Debug')
 command! BuildRelease call <SID>SetBuildMode('Release')
 command! BuildMode    echo "Current build mode: " . <SID>GetBuildMode()
 
-
 function! s:CleanBuild(dir) abort
   let l:prompt = (a:dir =~# 'Debug') ? 'Clean Debug build directory?' : 'Clean Release build directory?'
   if confirm(l:prompt, "&Yes\n&No", 2) == 1
@@ -77,7 +77,6 @@ function! s:SetupBuildMappings() abort
   call s:SetBinary(g:cpp_project_name, l:mode, '<F3>')
   call s:SetBuildAndRun(l:mode, '<F5>')
 endfunction
-
 
 function! s:SetupCMakeMappings() abort
   let g:cpp_project_name = fnamemodify(s:GetProjectDir(), ':t')
@@ -122,9 +121,8 @@ endfunction
 
 command! CMakeFolder call SetupCMakeProject()
 
-
 function! s:CMakeGenerate(...) abort
-  let l:script = expand('<sfile>:p:h') . '/cmake-cpp-init.sh'
+  let l:script = s:plugin_dir . '/scripts/cmake-init-cpp.sh'
   if !filereadable(l:script)
     echo "Generator script not found: " . l:script
     return
@@ -135,7 +133,6 @@ function! s:CMakeGenerate(...) abort
 endfunction
 
 command! -nargs=? CMakeGenerate call <SID>CMakeGenerate(<f-args>)
-
 
 if !exists('g:cpp_run_mappings_initialized')
   call SetupRunMappingsFromArg()
