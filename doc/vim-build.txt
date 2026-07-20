@@ -1,0 +1,61 @@
+===================================================================
+===================================================================
+	
+	DOC: VIM-BUILD
+
+===================================================================
+===================================================================
+
+
+
+*vim-build.txt*  Vim-Build plugin help
+
+Vim-Build is a small helper for CMake C++ projects.
+
+Commands
+
+:CMakeFolder
+    Load mappings for the current CMake project.
+
+:BuildDebug
+    Set build mode to Debug.
+
+:BuildRelease
+    Set build mode to Release.
+
+:BuildMode
+    Show the current build mode.
+
+:CMakeGenerate [dir]
+    Run the CMake project generator script.
+    If [dir] is omitted, the current directory is used.
+
+Mappings
+
+<C-b>
+    Toggle quickfix window.
+
+<F2>
+    Build current configuration.
+
+<F3>
+    Run the built binary.
+
+<F4>
+    Clean current build directory.
+
+<F5>
+    Build and run.
+
+Install
+
+Put this plugin under your Vim package path, for example:
+
+    ~/.vim/pack/plugins/start/vim-build/
+
+Then run:
+
+    :helptags ~/.vim/pack/plugins/start/vim-build/doc
+
+vim:tw=78:ts=8:ft=help:norl:
+
