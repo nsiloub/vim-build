@@ -51,23 +51,23 @@ You can switch it with:
 
 
 
-- [ ] **Implement a vim command for Debug/Release target**  
+- [x] **Implement a vim command for Debug/Release target**  
     - [x] ``:BuildDebug``:
     - [x] ``:BuildRelease``:
+- [ ] **Add vim commands for the currently "key binding only functionalities"**
+    - [ ]   First change key bindings into vim commands;
+    - [ ]   Call the vim commands with key bindings as needed
 - [ ] **Implement **
-    - [ ] ``<
-    - [ ] ``<
+    - [ ]   
+    - [ ]   
 - [ ] **Implement **
-    - [ ] ``<
-    - [ ] ``<
+    - [ ]   
+    - [ ]   
 - [ ] **Implement **
-    - [ ] ``<
-    - [ ] ``<
+    - [ ]   
+    - [ ]   
 - [ ] **Implement **
-    - [ ] ``<
-    - [ ] ``<
-- [ ] **Implement **
-    - [ ] ``<
-    - [ ] ``<
+    - [ ]   
+    - [ ]   
 
 
