@@ -1,9 +1,7 @@
-">>>>>>>>>>>>>>>>>>^^^^^^^^^^^^^^^^^^^^^^^^^^^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-">>>>>>>>>>>>>>>>>> 	    VIM-BUILD	      <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-">>>>>>>>>>>>>>>>>>___________________________<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+" =========================
+" 	VIM-BUILD
+" =========================
 
-
-" Open vim-dispatch/quickfix window and scroll to bottom
 function! ToggleQuickFix()
     if empty(filter(getwininfo(), 'v:val.quickfix'))
         Copen
@@ -14,6 +12,7 @@ function! ToggleQuickFix()
 endfunction
 
 nnoremap <C-b> :call ToggleQuickFix()<CR>
+
 
 function! s:IsCMakeProject(dir) abort
   return filereadable(a:dir . '/CMakeLists.txt')
@@ -30,6 +29,26 @@ function! s:GetProjectDir() abort
   return getcwd()
 endfunction
 
+function! s:GetBuildMode() abort
+  return get(g:, 'cpp_build_mode', 'Debug')
+endfunction
+
+function! s:SetBuildMode(mode) abort
+  if a:mode !=# 'Debug' && a:mode !=# 'Release'
+    echo "Invalid build mode: " . a:mode
+    return
+  endif
+
+  let g:cpp_build_mode = a:mode
+  call s:SetupBuildMappings()
+  echo "Build mode set to: " . a:mode
+endfunction
+
+command! BuildDebug  call <SID>SetBuildMode('Debug')
+command! BuildRelease call <SID>SetBuildMode('Release')
+command! BuildMode echo "Current build mode: " . <SID>GetBuildMode()
+
+
 function! s:CleanBuild(dir) abort
   let l:prompt = (a:dir =~# 'Debug') ? 'Clean Debug build directory?' : 'Clean Release build directory?'
   if confirm(l:prompt, "&Yes\n&No", 2) == 1
@@ -37,40 +56,40 @@ function! s:CleanBuild(dir) abort
   endif
 endfunction
 
-function! s:SetBinaryDebug(filename) abort
-  let bpath = getcwd() . "/bin/Debug/" . a:filename
-  execute "nnoremap <F3> :Dispatch " . bpath . " <CR> <bar> :Copen<CR>"
-endfunction
-function! s:SetBinaryRelease(filename) abort
-  let bpath = getcwd() . "/bin/Release/" . a:filename
-  execute "nnoremap <C-F3> :Dispatch " . bpath . " <CR> <bar> :Copen<CR>"
+function! s:SetBinary(filename, mode, lhs) abort
+  let l:bpath = getcwd() . "/bin/" . a:mode . "/" . a:filename
+  execute 'nnoremap ' . a:lhs . ' :Dispatch ' . l:bpath . ' <CR> <bar> :Copen<CR>'
 endfunction
 
-function! s:SetBuildAndRunDebug() abort
-  let exe = getcwd() . "/bin/Debug/" . g:cpp_project_name
-  let cmd = "cmake --build build/Debug && " . exe
-  execute "nnoremap <F5> :Dispatch! sh -c " . shellescape(cmd) . " <CR> <bar> :Copen<CR>"
+function! s:SetBuildAndRun(mode, lhs) abort
+  let l:exe = getcwd() . "/bin/" . a:mode . "/" . g:cpp_project_name
+  let l:cmd = "cmake --build build/" . a:mode . " && " . l:exe
+  execute 'nnoremap ' . a:lhs . ' :Dispatch! sh -c ' . shellescape(l:cmd) . ' <CR> <bar> :Copen<CR>'
 endfunction
 
-function! s:SetBuildAndRunRelease() abort
-  let exe = getcwd() . "/bin/Release/" . g:cpp_project_name
-  let cmd = "cmake --build build/Release && " . exe
-  execute "nnoremap <C-F5> :Dispatch! sh -c " . shellescape(cmd) . " <CR> <bar> :Copen<CR>"
+function! s:SetupBuildMappings() abort
+  let l:mode = s:GetBuildMode()
+
+  " Mode-specific build
+  execute 'nnoremap <F2>   :Dispatch! cmake --build build/' . l:mode . ' <CR>'
+  execute 'nnoremap <F4>   :call <SID>CleanBuild(''build/' . l:mode . ''')<CR>'
+
+  " Run current mode
+  call s:SetBinary(g:cpp_project_name, l:mode, '<F3>')
+  call s:SetBuildAndRun(l:mode, '<F5>')
+
+  " Optional: release alternatives on Ctrl-keys if you want both always available
+  " (remove if you want ONLY the selected mode active)
 endfunction
 
 function! s:SetupCMakeMappings() abort
-  nnoremap <F2>   :Dispatch! make -C build/Debug    <CR>
-  nnoremap <C-F2> :Dispatch! make -C build/Release  <CR>
-
-  nnoremap <F4>   :call <SID>CleanBuild('build/Debug')<CR>
-  nnoremap <C-F4> :call <SID>CleanBuild('build/Release')<CR>
-
   let g:cpp_project_name = fnamemodify(s:GetProjectDir(), ':t')
 
-  call s:SetBinaryDebug(g:cpp_project_name)
-  call s:SetBinaryRelease(g:cpp_project_name)
-  call s:SetBuildAndRunDebug()
-  call s:SetBuildAndRunRelease()
+  if !exists('g:cpp_build_mode')
+    let g:cpp_build_mode = 'Debug'
+  endif
+
+  call s:SetupBuildMappings()
 endfunction
 
 function! SetupRunMappingsFromArg() abort
@@ -109,8 +128,7 @@ command! CMakeFolder call SetupCMakeProject()
 if !exists('g:cpp_run_mappings_initialized')
   call SetupRunMappingsFromArg()
 endif
-
-">>>>>>>>>>>>>>>>>>^^^^^^^^^^^^^^^^^^^^^^^^^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-">>>>>>>>>>>>>>>>>> END BUILD/CMAKE SECTION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-">>>>>>>>>>>>>>>>>>_________________________<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+" =========================
+" END VIM-BUILD
+" =========================
 
