@@ -6,30 +6,32 @@
 #        ||				||
 ################################################################	
 
+#!/usr/bin/env bash
 
 set -euo pipefail
 
-read -rp "Enter your project name ('-' allowed): " projectName
+targetDir="${1:-}"
+if [[ -z "$targetDir" ]]; then
+  read -rp "Enter project folder name or path ('-' allowed): " targetDir
+fi
 
-mkdir -p -- "$projectName"
-cd -- "$projectName"
+mkdir -p -- "$targetDir"
+cd -- "$targetDir"
 
-# create folders
+projectName="$(basename "$targetDir")"
+
 mkdir -p bin/Debug bin/Release build/Debug build/Release config include lib src/Sources src/Headers
 
-# Ensure CMake always finds at least one Sources .cpp at configure time
 cat > src/Sources/__dummy.cpp <<'EOF'
 // Intentionally empty.
 // This file exists so CMake always has at least one source file for mySources.
 EOF
 
-# create main.cpp
 cat > src/main.cpp <<'EOF'
 #include <cstdio>
 #include "Config.h"
 
 int main(int argc, char* argv[]) {
-    // output program location and version
     printf("Running: %s\nVersion: %i.%i\n", argv[argc-argc],
         VERSION_MAJOR, VERSION_MINOR);
 
@@ -38,20 +40,14 @@ int main(int argc, char* argv[]) {
 }
 EOF
 
-
-# Detect current CMake version (e.g., 3.28.1 -> 3.28 or 3.28.1 depending on your regex)
 defaultCmakeVersion="$(
   cmake --version | awk 'NR==1{ if (match($0, /[0-9]+(\.[0-9]+)*/)) { print substr($0, RSTART, RLENGTH); exit } }'
 )"
-
-# Fallback if detection fails
 defaultCmakeVersion="${defaultCmakeVersion:-3.8}"
 
-# CMake inputs
 read -rp "Minimum required CMake version (ENTER defaults to current ${defaultCmakeVersion}): " cmakeVersion
 cmakeVersion="${cmakeVersion:-$defaultCmakeVersion}"
 
-# Safety: accept only float-like numbers such as 3.2, 3.28, 4.1.1 (we accept 1+ dots)
 while [[ ! "$cmakeVersion" =~ ^[0-9]+(\.[0-9]+)*$ ]]; do
   read -rp "Invalid version. Enter a float-style number like 3.2: " cmakeVersion
   cmakeVersion="${cmakeVersion:-$defaultCmakeVersion}"
@@ -62,15 +58,12 @@ while [[ ! "$cstVersion" =~ ^(11|14|17|20|23|2[0-9])$ ]]; do
   read -rp "Invalid C++ standard. Try 11, 14, 17, 20, 23, 26: " cstVersion
 done
 
-
-# Config template
 cat > include/Config.h.in <<EOF
 #pragma once
 #define VERSION_MAJOR @${projectName}_VERSION_MAJOR@
 #define VERSION_MINOR @${projectName}_VERSION_MINOR@
 EOF
 
-# Generate CMakeLists.txt (template + placeholder substitution)
 cat > CMakeLists.txt <<'EOF'
 cmake_minimum_required(VERSION __CMAKE_VERSION__)
 
@@ -79,14 +72,10 @@ project(__PROJECT_NAME__ VERSION 1.0)
 set(CMAKE_CXX_STANDARD __CST_VERSION__)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-
-# Auto-collect all .cpp files under src/Sources (recursively)
 file(GLOB_RECURSE SRC_SOURCES CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/src/Sources/*.cpp"
 )
 
-# Safety fallback: if no .cpp exists, keep CMake from failing
 if(NOT SRC_SOURCES)
   set(SRC_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Sources/__dummy.cpp")
 endif()
@@ -103,8 +92,6 @@ add_executable(__PROJECT_NAME__
 
 target_link_libraries(__PROJECT_NAME__ PRIVATE mySources)
 
-
-
 set_target_properties(__PROJECT_NAME__
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>"
@@ -116,9 +103,9 @@ configure_file(include/Config.h.in
     "${CMAKE_CURRENT_SOURCE_DIR}/include/Config.h"
 )
 
-target_include_directories(__PROJECT_NAME__ 
-	PUBLIC	"${CMAKE_CURRENT_SOURCE_DIR}/include"
-	PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/Headers"
+target_include_directories(__PROJECT_NAME__
+    PUBLIC  "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/Headers"
 )
 
 set(gcc_cxx "$<COMPILE_LANG_AND_ID:CXX,GNU>")
@@ -126,10 +113,7 @@ set(clang_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang>")
 set(gcc_or_clang_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU>")
 set(msvc_cxx "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
 
-# GCC+Clang common advice
 set(clang_gcc_common_flags "-pedantic-errors;-Wshadow")
-
-# GCC-only advice
 set(gcc_only_flags "-Wall;-Weffc++;-Wextra;-Wconversion;-Wsign-conversion;-Werror")
 
 set(debug_flags "-ggdb")
@@ -151,27 +135,11 @@ sed -i \
   -e "s/__CST_VERSION__/${cstVersion}/g" \
   CMakeLists.txt
 
-
-
-
-
-# >>>>>> GENERATE INITIAL BUILDS <<<<<<<<<<<<<<
-
-
-# Make Debug builds
 cd build/Debug && cmake -DCMAKE_BUILD_TYPE=Debug ../.. && cmake --build .
-
-# navigate back to the project main directory
 cd ../..
 
 cd build/Release && cmake -DCMAKE_BUILD_TYPE=Release ../.. && cmake --build .
-
-# navigate back to the project main directory
 cd ../..
-
-
-# >>>>>> END: GENERATE INITIAL BUILDS <<<<<<<<<
-
 
 echo "
 =================================================================
@@ -181,8 +149,8 @@ Project initiated succesfully!
 Run:
 
 --------------------
-cd ${projectName}  
-vim .              
+cd ${targetDir}
+vim .
 --------------------
 to start working"
 

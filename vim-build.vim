@@ -1,14 +1,14 @@
 " =========================
-" 	VIM-BUILD
+" VIM-BUILD
 " =========================
 
 function! ToggleQuickFix()
-    if empty(filter(getwininfo(), 'v:val.quickfix'))
-        Copen
-        cbottom
-    else
-        cclose
-    endif
+  if empty(filter(getwininfo(), 'v:val.quickfix'))
+    copen
+    cbottom
+  else
+    cclose
+  endif
 endfunction
 
 nnoremap <C-b> :call ToggleQuickFix()<CR>
@@ -44,43 +44,40 @@ function! s:SetBuildMode(mode) abort
   echo "Build mode set to: " . a:mode
 endfunction
 
-command! BuildDebug  call <SID>SetBuildMode('Debug')
+command! BuildDebug   call <SID>SetBuildMode('Debug')
 command! BuildRelease call <SID>SetBuildMode('Release')
-command! BuildMode echo "Current build mode: " . <SID>GetBuildMode()
+command! BuildMode    echo "Current build mode: " . <SID>GetBuildMode()
 
 
 function! s:CleanBuild(dir) abort
   let l:prompt = (a:dir =~# 'Debug') ? 'Clean Debug build directory?' : 'Clean Release build directory?'
   if confirm(l:prompt, "&Yes\n&No", 2) == 1
-    execute 'Dispatch! cmake --build ' . a:dir . ' --target clean'
+    execute 'Dispatch! cmake --build ' . fnameescape(a:dir) . ' --target clean'
   endif
 endfunction
 
 function! s:SetBinary(filename, mode, lhs) abort
   let l:bpath = getcwd() . "/bin/" . a:mode . "/" . a:filename
-  execute 'nnoremap ' . a:lhs . ' :Dispatch ' . l:bpath . ' <CR> <bar> :Copen<CR>'
+  execute 'nnoremap ' . a:lhs . ' :Dispatch ' . fnameescape(l:bpath) . '<CR>'
 endfunction
 
 function! s:SetBuildAndRun(mode, lhs) abort
   let l:exe = getcwd() . "/bin/" . a:mode . "/" . g:cpp_project_name
-  let l:cmd = "cmake --build build/" . a:mode . " && " . l:exe
-  execute 'nnoremap ' . a:lhs . ' :Dispatch! sh -c ' . shellescape(l:cmd) . ' <CR> <bar> :Copen<CR>'
+  let l:buildcmd = "cmake --build build/" . a:mode
+  let l:runcmd = fnameescape(l:exe)
+  execute 'nnoremap ' . a:lhs . ' :Dispatch! sh -c ' . shellescape(l:buildcmd . ' && ' . l:runcmd) . '<CR>'
 endfunction
 
 function! s:SetupBuildMappings() abort
   let l:mode = s:GetBuildMode()
 
-  " Mode-specific build
-  execute 'nnoremap <F2>   :Dispatch! cmake --build build/' . l:mode . ' <CR>'
-  execute 'nnoremap <F4>   :call <SID>CleanBuild(''build/' . l:mode . ''')<CR>'
+  execute 'nnoremap <F2> :Dispatch! cmake --build build/' . l:mode . '<CR>'
+  execute 'nnoremap <F4> :call <SID>CleanBuild(''build/' . l:mode . ''')<CR>'
 
-  " Run current mode
   call s:SetBinary(g:cpp_project_name, l:mode, '<F3>')
   call s:SetBuildAndRun(l:mode, '<F5>')
-
-  " Optional: release alternatives on Ctrl-keys if you want both always available
-  " (remove if you want ONLY the selected mode active)
 endfunction
+
 
 function! s:SetupCMakeMappings() abort
   let g:cpp_project_name = fnamemodify(s:GetProjectDir(), ':t')
@@ -125,9 +122,25 @@ endfunction
 
 command! CMakeFolder call SetupCMakeProject()
 
+
+function! s:CMakeGenerate(...) abort
+  let l:script = expand('<sfile>:p:h') . '/cmake-cpp-init.sh'
+  if !filereadable(l:script)
+    echo "Generator script not found: " . l:script
+    return
+  endif
+
+  let l:target = (a:0 > 0 && a:1 !=# '') ? a:1 : getcwd()
+  execute 'Dispatch! sh ' . shellescape(l:script) . ' ' . shellescape(l:target)
+endfunction
+
+command! -nargs=? CMakeGenerate call <SID>CMakeGenerate(<f-args>)
+
+
 if !exists('g:cpp_run_mappings_initialized')
   call SetupRunMappingsFromArg()
 endif
+
 " =========================
 " END VIM-BUILD
 " =========================
