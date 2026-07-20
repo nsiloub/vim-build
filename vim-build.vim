@@ -1,6 +1,7 @@
 ">>>>>>>>>>>>>>>>>>^^^^^^^^^^^^^^^^^^^^^^^^^^^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-">>>>>>>>>>>>>>>>>> start BUILD/CMAKE SECTION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+">>>>>>>>>>>>>>>>>> 	    VIM-BUILD	      <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ">>>>>>>>>>>>>>>>>>___________________________<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 
 " Open vim-dispatch/quickfix window and scroll to bottom
 function! ToggleQuickFix()
@@ -40,7 +41,6 @@ function! s:SetBinaryDebug(filename) abort
   let bpath = getcwd() . "/bin/Debug/" . a:filename
   execute "nnoremap <F3> :Dispatch " . bpath . " <CR> <bar> :Copen<CR>"
 endfunction
-
 function! s:SetBinaryRelease(filename) abort
   let bpath = getcwd() . "/bin/Release/" . a:filename
   execute "nnoremap <C-F3> :Dispatch " . bpath . " <CR> <bar> :Copen<CR>"
