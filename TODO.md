@@ -7,11 +7,6 @@
 - [x] **Implement a vim command for Debug/Release target**  
     - [x] ``:BuildDebug``:
     - [x] ``:BuildRelease``:
-- [ ] **Resolve problems**
-    - [x]  ``:CMakeGenerate``: Generator script not found: /path/to/cmake-cpp-init.sh
-    - [ ]   Not prompting the for project
-    - [ ]   Not generating correctly, and missing the CMakelists.txt
-    - [ ]   
 - [ ] **Turn it into a plugin instead**
     - [x]   Restructure into 
         ```bash
@@ -28,8 +23,26 @@
         ``` 
     - [ ]   
 - [ ] **Add vim commands for the currently "key binding only functionalities"**
-    - [ ]   First change key bindings into vim commands;
-    - [ ]   Call the vim commands with key bindings as needed
+    - [x]   First change key bindings into vim commands;
+        ### Commands that i want:
+         - [x]  ```vCompileAll```  Short version ```vca```: Compile all the modified code files in the project, but without linking. ;
+         - [x]  ```vCompileCurrent``` Short version ```vcc```: Compile only the current file. ;
+         - [x]  ```vBuild``` short version ```vb```: compile, links, produce the executable,  but don't run. ;
+         - [x]  ```vRunCurrent``` short version ```vrc```: run the currently existing executable/output. ;
+         - [x]  ```vBuildAndRun```. short version ```vbar```: compile, links, produce the executable, and run the executable;
+         - [x]  ```vClean``` short ``vc``: removes all cached objects and executables;    
+         - [x]  ```vRebuild``` short ```vrb```: does a clean, followed by a build (no run );
+
+    - [ ]   Remove the 'V' before the commands and find bettere names
+    - [ ]   Add default key bindings to the most important commands;
+    - [ ]
+    - [ ]
+    - [ ]
+- [ ] **Resolve problems**
+    - [x]  ``:CMakeGenerate``: Generator script not found: /path/to/cmake-cpp-init.sh
+    - [ ]   Not prompting the for project
+    - [ ]   Not generating correctly, and missing the CMakelists.txt
+    - [ ]   
 - [ ] **Implement **
     - [ ]   
     - [ ]   

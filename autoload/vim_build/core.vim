@@ -1,11 +1,6 @@
 "=============================================================================
-"==============================================================================
-"
-"		AUTOLOAD: VIM-BUILD
-"
-"==============================================================================
-"===============================================================================
-
+" AUTOLOAD: VIM-BUILD
+"=============================================================================
 
 
 let s:plugin_dir = fnamemodify(expand('<sfile>:p'), ':h:h:h')
@@ -43,10 +38,92 @@ function! vim_build#core#set_build_mode(mode) abort
     echo "Invalid build mode: " . a:mode
     return
   endif
-
   let g:cpp_build_mode = a:mode
-  call s:setup_build_mappings()
   echo "Build mode set to: " . a:mode
+endfunction
+
+function! s:project_name() abort
+  return get(g:, 'cpp_project_name', fnamemodify(getcwd(), ':t'))
+endfunction
+
+function! s:build_dir() abort
+  return 'build/' . vim_build#core#get_build_mode()
+endfunction
+
+function! s:exe_path() abort
+  return getcwd() . '/bin/' . vim_build#core#get_build_mode() . '/' . s:project_name()
+endfunction
+
+function! s:compile_commands_file() abort
+  return getcwd() . '/build/' . vim_build#core#get_build_mode() . '/compile_commands.json'
+endfunction
+
+function! s:current_file() abort
+  return expand('%:p')
+endfunction
+
+function! s:run_shell(cmd) abort
+  execute 'Dispatch! sh -c ' . shellescape(a:cmd)
+endfunction
+
+function! vim_build#core#compile_all() abort
+  " Compiles the project sources without linking the final executable.
+  execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir()) . ' --target mySources'
+endfunction
+
+function! vim_build#core#compile_current() abort
+  let l:file = s:current_file()
+  if empty(l:file)
+    echo "No current file"
+    return
+  endif
+
+  let l:cc = s:compile_commands_file()
+  if filereadable(l:cc)
+    let l:cmd = 'python3 - <<''PY''
+import json, os, shlex, subprocess, sys
+cc = sys.argv[1]
+src = os.path.abspath(sys.argv[2])
+with open(cc, "r", encoding="utf-8") as f:
+    data = json.load(f)
+for entry in data:
+    if os.path.abspath(entry.get("file", "")) == src:
+        cmd = entry["command"] if "command" in entry else " ".join(entry["arguments"])
+        print(cmd)
+        raise SystemExit(0)
+raise SystemExit(1)
+PY
+'
+    let l:cmd = substitute(l:cmd, '\n', ' ', 'g')
+    let l:cmd = l:cmd . ' ' . shellescape(l:cc) . ' ' . shellescape(l:file)
+    let l:resolved = system(l:cmd)
+    if v:shell_error == 0 && !empty(trim(l:resolved))
+      call s:run_shell(trim(l:resolved))
+      return
+    endif
+  endif
+
+  " Fallback: compile the project sources without linking.
+  call vim_build#core#compile_all()
+endfunction
+
+function! vim_build#core#build_current() abort
+  execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir())
+endfunction
+
+function! vim_build#core#run_current() abort
+  let l:exe = s:exe_path()
+  if !filereadable(l:exe)
+    echo "Executable not found: " . l:exe
+    return
+  endif
+  execute 'Dispatch ' . fnameescape(l:exe)
+endfunction
+
+function! vim_build#core#build_and_run_current() abort
+  let l:exe = s:exe_path()
+  let l:buildcmd = 'cmake --build ' . s:build_dir()
+  execute 'Dispatch! sh -c ' . shellescape(l:buildcmd . ' && ' . l:exe)
 endfunction
 
 function! s:clean_build(dir) abort
@@ -56,36 +133,21 @@ function! s:clean_build(dir) abort
   endif
 endfunction
 
-function! s:set_binary(filename, mode, lhs) abort
-  let l:bpath = getcwd() . "/bin/" . a:mode . "/" . a:filename
-  execute 'nnoremap <silent> ' . a:lhs . ' :Dispatch ' . fnameescape(l:bpath) . '<CR>'
+function! vim_build#core#clean_current() abort
+  call s:clean_build(s:build_dir())
 endfunction
 
-function! s:set_build_and_run(mode, lhs) abort
-  let l:exe = getcwd() . "/bin/" . a:mode . "/" . g:cpp_project_name
-  let l:buildcmd = "cmake --build build/" . a:mode
-  let l:runcmd = fnameescape(l:exe)
-  execute 'nnoremap <silent> ' . a:lhs . ' :Dispatch! sh -c ' . shellescape(l:buildcmd . ' && ' . l:runcmd) . '<CR>'
-endfunction
-
-function! s:setup_build_mappings() abort
-  let l:mode = vim_build#core#get_build_mode()
-
-  execute 'nnoremap <silent> <F2> :Dispatch! cmake --build build/' . l:mode . '<CR>'
-  execute 'nnoremap <silent> <F4> :call s:clean_build(''build/' . l:mode . ''')<CR>'
-
-  call s:set_binary(g:cpp_project_name, l:mode, '<F3>')
-  call s:set_build_and_run(l:mode, '<F5>')
+function! vim_build#core#rebuild_current() abort
+  call vim_build#core#clean_current()
+  call vim_build#core#build_current()
 endfunction
 
 function! s:setup_cmake_mappings() abort
   let g:cpp_project_name = fnamemodify(s:get_project_dir(), ':t')
-
   if !exists('g:cpp_build_mode')
     let g:cpp_build_mode = 'Debug'
   endif
-
-  call s:setup_build_mappings()
+  echo "CMake mappings loaded for: " . getcwd()
 endfunction
 
 function! vim_build#core#setup_run_mappings_from_arg() abort
@@ -95,7 +157,6 @@ function! vim_build#core#setup_run_mappings_from_arg() abort
   let g:cpp_run_mappings_initialized = 1
 
   let l:project_dir = s:get_project_dir()
-
   if !s:is_cmake_project(l:project_dir)
     return
   endif
@@ -116,13 +177,16 @@ function! vim_build#core#setup_cmake_project() abort
   endif
 
   call s:setup_cmake_mappings()
-  echo "CMake mappings loaded for: " . l:project_dir
 endfunction
 
 function! vim_build#core#cmake_generate(...) abort
-  let l:script = s:plugin_dir . '/scripts/cmake-init-cpp.sh'
+  let l:script = s:plugin_dir . '/scripts/cmake-cpp-init.sh'
   if !filereadable(l:script)
-    echo "Generator script not found: " . l:script
+    let l:script = s:plugin_dir . '/scripts/cmake-init-cpp.sh'
+  endif
+
+  if !filereadable(l:script)
+    echo "Generator script not found"
     return
   endif
 
@@ -130,3 +194,9 @@ function! vim_build#core#cmake_generate(...) abort
   execute 'Dispatch! sh ' . shellescape(l:script) . ' ' . shellescape(l:target)
 endfunction
 
+
+
+
+"=============================================================================
+" 		END AUTOLOAD: VIM-BUILD
+"=============================================================================

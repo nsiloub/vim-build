@@ -5,6 +5,7 @@
 # 	 ||	C++ CMake Init script	||
 #        ||				||
 ################################################################	
+#!/usr/bin/env bash
 
 set -euo pipefail
 
@@ -51,7 +52,7 @@ while [[ ! "$cmakeVersion" =~ ^[0-9]+(\.[0-9]+)*$ ]]; do
   cmakeVersion="${cmakeVersion:-$defaultCmakeVersion}"
 done
 
-read -rp "Enter the C++ standard version(11, 17, 20, 23...): " cstVersion
+read -rp "Enter the C++ standard version(11, 14, 17, 20, 23, 26): " cstVersion
 while [[ ! "$cstVersion" =~ ^(11|14|17|20|23|2[0-9])$ ]]; do
   read -rp "Invalid C++ standard. Try 11, 14, 17, 20, 23, 26: " cstVersion
 done
