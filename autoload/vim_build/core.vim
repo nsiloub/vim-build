@@ -180,18 +180,28 @@ function! vim_build#core#setup_cmake_project() abort
 endfunction
 
 function! vim_build#core#cmake_generate(...) abort
-  let l:script = s:plugin_dir . '/scripts/cmake-cpp-init.sh'
-  if !filereadable(l:script)
-    let l:script = s:plugin_dir . '/scripts/cmake-init-cpp.sh'
-  endif
-
+  let l:script = s:plugin_dir . '/scripts/cmake-init-cpp.sh'
   if !filereadable(l:script)
     echo "Generator script not found"
     return
   endif
 
-  let l:target = (a:0 > 0 && a:1 !=# '') ? a:1 : getcwd()
-  execute 'Dispatch! sh ' . shellescape(l:script) . ' ' . shellescape(l:target)
+  let l:target = input('Project folder/path: ', getcwd())
+  if empty(l:target)
+    return
+  endif
+
+  let l:cmakeVersion = input('Minimum CMake version: ', '3.8')
+  if empty(l:cmakeVersion)
+    let l:cmakeVersion = '3.8'
+  endif
+
+  let l:cxxVersion = input('C++ standard version (11/14/17/20/23/26): ', '17')
+  if empty(l:cxxVersion)
+    let l:cxxVersion = '17'
+  endif
+
+  execute 'Dispatch! sh ' . shellescape(l:script) . ' ' . shellescape(l:target) . ' ' . shellescape(l:cmakeVersion) . ' ' . shellescape(l:cxxVersion)
 endfunction
 
 
@@ -200,3 +210,4 @@ endfunction
 "=============================================================================
 " 		END AUTOLOAD: VIM-BUILD
 "=============================================================================
+

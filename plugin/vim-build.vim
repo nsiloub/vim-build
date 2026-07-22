@@ -7,7 +7,7 @@ if exists('g:loaded_vim_build')
 endif
 let g:loaded_vim_build = 1
 
-command! -nargs=0 GenerateBoilerPlate call vim_build#core#cmake_generate(<f-args>)
+command! -nargs=0 GenerateBoilerPlate call vim_build#core#cmake_generate()
 command! -nargs=0 CmakeOn             call vim_build#core#setup_cmake_project()
 
 command! -nargs=0 SetDebugMode        call vim_build#core#set_build_mode('Debug')

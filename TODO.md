@@ -47,9 +47,18 @@
     - [ ]
     - [ ]
 - [ ] **Resolve problems**
-    - [x]  ``:CMakeGenerate``: Generator script not found: /path/to/cmake-cpp-init.sh
-    - [ ]   Not prompting the for project
-    - [ ]   Not generating correctly, and missing the CMakelists.txt
+    - [x]  ``:CMakeGenerate``: Generator script not found: /path/to/cmake-cpp-init.sh. And i changed it into ```GenerateBoilerPlate``` 
+    - [x]   Not prompting the for project
+    - [x]   Not generating correctly, and missing the CMakelists.txt and other
+    - [ ]   Make vim open a Terminal for the scripts prompts
+    - [ ]   
+    - [ ]   
+    - [ ]   
+    - [ ]   
+    - [ ]   
+    - [ ]   
+    - [ ]   
+    - [ ]   
     - [ ]   
 - [ ] **Implement **
     - [ ]   

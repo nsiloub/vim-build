@@ -10,6 +10,9 @@
 set -euo pipefail
 
 targetDir="${1:-}"
+cmakeVersion="${2:-}"
+cstVersion="${3:-}"
+
 if [[ -z "$targetDir" ]]; then
   read -rp "Enter project folder name or path ('-' allowed): " targetDir
 fi
@@ -44,15 +47,20 @@ defaultCmakeVersion="$(
 )"
 defaultCmakeVersion="${defaultCmakeVersion:-3.8}"
 
-read -rp "Minimum required CMake version (ENTER defaults to current ${defaultCmakeVersion}): " cmakeVersion
-cmakeVersion="${cmakeVersion:-$defaultCmakeVersion}"
+if [[ -z "$cmakeVersion" ]]; then
+  read -rp "Minimum required CMake version (ENTER defaults to current ${defaultCmakeVersion}): " cmakeVersion
+  cmakeVersion="${cmakeVersion:-$defaultCmakeVersion}"
+fi
 
 while [[ ! "$cmakeVersion" =~ ^[0-9]+(\.[0-9]+)*$ ]]; do
   read -rp "Invalid version. Enter a float-style number like 3.2: " cmakeVersion
   cmakeVersion="${cmakeVersion:-$defaultCmakeVersion}"
 done
 
-read -rp "Enter the C++ standard version(11, 14, 17, 20, 23, 26): " cstVersion
+if [[ -z "$cstVersion" ]]; then
+  read -rp "Enter the C++ standard version(11, 14, 17, 20, 23, 26): " cstVersion
+fi
+
 while [[ ! "$cstVersion" =~ ^(11|14|17|20|23|2[0-9])$ ]]; do
   read -rp "Invalid C++ standard. Try 11, 14, 17, 20, 23, 26: " cstVersion
 done
