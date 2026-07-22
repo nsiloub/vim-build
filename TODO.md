@@ -33,8 +33,16 @@
          - [x]  ```vClean``` short ``vc``: removes all cached objects and executables;    
          - [x]  ```vRebuild``` short ```vrb```: does a clean, followed by a build (no run );
 
-    - [ ]   Remove the 'V' before the commands and find bettere names
-    - [ ]   Add default key bindings to the most important commands;
+    - [x]   Remove the 'V' before the commands and remove short versions
+        
+         - [x]  ```vCompileAll```  into ==> ```CompileAll```
+         - [x]  ```vCompileCurrent``` into ==> ```CompileCurrent```
+         - [x]  ```vBuild``` into ==> ```Build```
+         - [x]  ```vRunCurrent``` into ==> ```RunCurrent```
+         - [x]  ```vBuildAndRun```. into ==> ```BuildAndRun```
+         - [x]  ```vClean``` into ==> ```Clean```
+         - [x]  ```vRebuild``` into ==> ```Rebuild```
+    - [ ]   Add default key bindings to the most important commands(in my private ~/.vimrc);
     - [ ]
     - [ ]
     - [ ]
