@@ -10,9 +10,6 @@
 set -euo pipefail
 
 targetDir="${1:-}"
-cmakeVersion="${2:-}"
-cstVersion="${3:-}"
-
 if [[ -z "$targetDir" ]]; then
   read -rp "Enter project folder name or path ('-' allowed): " targetDir
 fi
@@ -47,20 +44,15 @@ defaultCmakeVersion="$(
 )"
 defaultCmakeVersion="${defaultCmakeVersion:-3.8}"
 
-if [[ -z "$cmakeVersion" ]]; then
-  read -rp "Minimum required CMake version (ENTER defaults to current ${defaultCmakeVersion}): " cmakeVersion
-  cmakeVersion="${cmakeVersion:-$defaultCmakeVersion}"
-fi
+read -rp "Minimum required CMake version (ENTER defaults to current ${defaultCmakeVersion}): " cmakeVersion
+cmakeVersion="${cmakeVersion:-$defaultCmakeVersion}"
 
 while [[ ! "$cmakeVersion" =~ ^[0-9]+(\.[0-9]+)*$ ]]; do
   read -rp "Invalid version. Enter a float-style number like 3.2: " cmakeVersion
   cmakeVersion="${cmakeVersion:-$defaultCmakeVersion}"
 done
 
-if [[ -z "$cstVersion" ]]; then
-  read -rp "Enter the C++ standard version(11, 14, 17, 20, 23, 26): " cstVersion
-fi
-
+read -rp "Enter the C++ standard version(11, 14, 17, 20, 23, 26): " cstVersion
 while [[ ! "$cstVersion" =~ ^(11|14|17|20|23|2[0-9])$ ]]; do
   read -rp "Invalid C++ standard. Try 11, 14, 17, 20, 23, 26: " cstVersion
 done
@@ -71,54 +63,54 @@ cat > include/Config.h.in <<EOF
 #define VERSION_MINOR @${projectName}_VERSION_MINOR@
 EOF
 
-cat > CMakeLists.txt <<'EOF'
-cmake_minimum_required(VERSION __CMAKE_VERSION__)
+cat > CMakeLists.txt <<EOF
+cmake_minimum_required(VERSION ${cmakeVersion})
 
-project(__PROJECT_NAME__ VERSION 1.0)
+project(${projectName} VERSION 1.0)
 
-set(CMAKE_CXX_STANDARD __CST_VERSION__)
+set(CMAKE_CXX_STANDARD ${cstVersion})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB_RECURSE SRC_SOURCES CONFIGURE_DEPENDS
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/Sources/*.cpp"
+  "\${CMAKE_CURRENT_SOURCE_DIR}/src/Sources/*.cpp"
 )
 
 if(NOT SRC_SOURCES)
-  set(SRC_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Sources/__dummy.cpp")
+  set(SRC_SOURCES "\${CMAKE_CURRENT_SOURCE_DIR}/src/Sources/__dummy.cpp")
 endif()
 
-add_library(mySources ${SRC_SOURCES})
+add_library(mySources \${SRC_SOURCES})
 
 target_include_directories(mySources
-  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/Headers"
+  PUBLIC "\${CMAKE_CURRENT_SOURCE_DIR}/src/Headers"
 )
 
-add_executable(__PROJECT_NAME__
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
+add_executable(${projectName}
+  "\${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
 )
 
-target_link_libraries(__PROJECT_NAME__ PRIVATE mySources)
+target_link_libraries(${projectName} PRIVATE mySources)
 
-set_target_properties(__PROJECT_NAME__
+set_target_properties(${projectName}
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>"
+    RUNTIME_OUTPUT_DIRECTORY "\${PROJECT_SOURCE_DIR}/bin/\$<CONFIG>"
 )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 configure_file(include/Config.h.in
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/Config.h"
+    "\${CMAKE_CURRENT_SOURCE_DIR}/include/Config.h"
 )
 
-target_include_directories(__PROJECT_NAME__
-    PUBLIC  "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/Headers"
+target_include_directories(${projectName}
+    PUBLIC  "\${CMAKE_CURRENT_SOURCE_DIR}/include"
+    PRIVATE "\${CMAKE_CURRENT_SOURCE_DIR}/src/Headers"
 )
 
-set(gcc_cxx "$<COMPILE_LANG_AND_ID:CXX,GNU>")
-set(clang_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang>")
-set(gcc_or_clang_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU>")
-set(msvc_cxx "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
+set(gcc_cxx "\$<COMPILE_LANG_AND_ID:CXX,GNU>")
+set(clang_cxx "\$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang>")
+set(gcc_or_clang_cxx "\$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU>")
+set(msvc_cxx "\$<COMPILE_LANG_AND_ID:CXX,MSVC>")
 
 set(clang_gcc_common_flags "-pedantic-errors;-Wshadow")
 set(gcc_only_flags "-Wall;-Weffc++;-Wextra;-Wconversion;-Wsign-conversion;-Werror")
@@ -126,21 +118,15 @@ set(gcc_only_flags "-Wall;-Weffc++;-Wextra;-Wconversion;-Wsign-conversion;-Werro
 set(debug_flags "-ggdb")
 set(release_flags "-O2" "-DNDEBUG")
 
-target_compile_options(__PROJECT_NAME__ PRIVATE
-  "$<${clang_cxx}:${clang_gcc_common_flags}>"
-  "$<${gcc_cxx}:${clang_gcc_common_flags}>"
-  "$<${gcc_cxx}:${gcc_only_flags}>"
-  "$<${msvc_cxx}:-W3>"
-  "$<${gcc_or_clang_cxx}:$<$<CONFIG:Debug>:${debug_flags}>>"
-  "$<${gcc_or_clang_cxx}:$<$<CONFIG:Release>:${release_flags}>>"
+target_compile_options(${projectName} PRIVATE
+  "\$<\${clang_cxx}:\${clang_gcc_common_flags}>"
+  "\$<\${gcc_cxx}:\${clang_gcc_common_flags}>"
+  "\$<\${gcc_cxx}:\${gcc_only_flags}>"
+  "\$<\${msvc_cxx}:-W3>"
+  "\$<\${gcc_or_clang_cxx}:\$<\$<CONFIG:Debug>:\${debug_flags}>>"
+  "\$<\${gcc_or_clang_cxx}:\$<\$<CONFIG:Release>:\${release_flags}>>"
 )
 EOF
-
-sed -i \
-  -e "s/__PROJECT_NAME__/${projectName}/g" \
-  -e "s/__CMAKE_VERSION__/${cmakeVersion}/g" \
-  -e "s/__CST_VERSION__/${cstVersion}/g" \
-  CMakeLists.txt
 
 cd build/Debug && cmake -DCMAKE_BUILD_TYPE=Debug ../.. && cmake --build .
 cd ../..
