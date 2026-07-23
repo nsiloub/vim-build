@@ -62,13 +62,7 @@ MAPPINGS                                                      *vim-build-mapping
 
 
 Command-line abbreviations:
-
-  gpb   -> :GenerateBoilerPlate
-  con   -> :CmakeOn
-  sdm   -> :SetDebugMode
-  srm   -> :SetReleaseMode
-  sbm   -> :ShowBuildMode
-  tqf   -> :ToggleQuickFix
+See the README.md, if you want to set commandline abbrevieations
 
 ------------------------------------------------------------------------------
 CONFIGURATION                                                  *vim-build-config*

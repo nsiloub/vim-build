@@ -24,12 +24,16 @@ command! -nargs=0 Rebuild             call vim_build#core#rebuild_current()
 
 command! -nargs=0 ToggleQuickFix       call vim_build#core#toggle_quickfix()
 
-cabbrev <expr> gpb   getcmdtype() ==# ':' && getcmdline() =~# '^gpb\%(\s\|$\)'   ? 'GenerateBoilerPlate' : 'gpb'
-cabbrev <expr> con   getcmdtype() ==# ':' && getcmdline() =~# '^con\%(\s\|$\)'   ? 'CmakeOn'             : 'con'
-cabbrev <expr> sdm   getcmdtype() ==# ':' && getcmdline() =~# '^sdm\%(\s\|$\)'   ? 'SetDebugMode'        : 'sdm'
-cabbrev <expr> srm   getcmdtype() ==# ':' && getcmdline() =~# '^srm\%(\s\|$\)'   ? 'SetReleaseMode'      : 'srm'
-cabbrev <expr> sbm   getcmdtype() ==# ':' && getcmdline() =~# '^sbm\%(\s\|$\)'   ? 'ShowBuildMode'       : 'sbm'
-cabbrev <expr> tqf   getcmdtype() ==# ':' && getcmdline() =~# '^tqf\%(\s\|$\)'   ? 'ToggleQuickFix'      : 'tqf'
+
+
+" If you want short commandlines abbreviations for the long vim commands
+" You can set them like in the examples bellow
+"cabbrev <expr> gbp   getcmdtype() ==# ':' && getcmdline() =~# '^gbp\%(\s\|$\)'   ? 'GenerateBoilerPlate' : 'gbp'
+"cabbrev <expr> con   getcmdtype() ==# ':' && getcmdline() =~# '^con\%(\s\|$\)'   ? 'CmakeOn'             : 'con'
+"cabbrev <expr> sdm   getcmdtype() ==# ':' && getcmdline() =~# '^sdm\%(\s\|$\)'   ? 'SetDebugMode'        : 'sdm'
+"cabbrev <expr> srm   getcmdtype() ==# ':' && getcmdline() =~# '^srm\%(\s\|$\)'   ? 'SetReleaseMode'      : 'srm'
+"cabbrev <expr> sbm   getcmdtype() ==# ':' && getcmdline() =~# '^sbm\%(\s\|$\)'   ? 'ShowBuildMode'       : 'sbm'
+"cabbrev <expr> tqf   getcmdtype() ==# ':' && getcmdline() =~# '^tqf\%(\s\|$\)'   ? 'ToggleQuickFix'      : 'tqf'
 
 
 if !exists('g:cpp_run_mappings_initialized')
