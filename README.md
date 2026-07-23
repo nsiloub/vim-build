@@ -91,17 +91,21 @@ This creates a starter project and initial build files.
 
 ###     Select build mode
 ```vim
-:SetDebugMode:SetReleaseMode:ShowBuildMode
+:SetDebugMode
+:SetReleaseMode
+:ShowBuildMode
 ```
 
 ###     Compile actions
 ```vim
-:CompileAll:CompileCurrent
+:CompileAll
+:CompileCurrent
 ```
 
 ###     Clean / rebuild
 ```vim
-:Clean:Rebuild
+:Clean
+:Rebuild
 ```
 
 Quickfix
