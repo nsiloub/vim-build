@@ -55,10 +55,7 @@ Plug 'nsiloub/vim-build'
 
 
 ## Mappings (Optional)
-```vimscript
-    <C-b> — toggle quickfix
-```
-
+You can set your own keybindings to the commands as you wish, in your ```.vimrc``` file.
 ## Command-line abbreviations
 
 -   ```gpb``` → ```:GenerateBoilerPlate```
@@ -108,14 +105,9 @@ This creates a starter project and initial build files.
 :Rebuild
 ```
 
-Quickfix
+###     Quickfix
 ```vim
 :ToggleQuickFix
-```
-
-Or press:
-```vim
-<C-b>
 ```
 
 ###     Turn on The building functionalities 

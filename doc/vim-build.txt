@@ -60,8 +60,6 @@ COMMANDS                                                      *vim-build-command
 ------------------------------------------------------------------------------
 MAPPINGS                                                      *vim-build-mappings*
 
-<C-b>
-    Toggle the quickfix window.
 
 Command-line abbreviations:
 
