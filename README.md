@@ -54,19 +54,13 @@ Plug 'nsiloub/vim-build'
 -   ```:ToggleQuickFix``` — toggle the quickfix window<br>
 
 
-## Mappings (Optional)
-```vimscript
-    <C-b> — toggle quickfix
+## Mappings
+You can set your own keybindings to the commands as you wish, in your ```.vimrc``` file.  
+For example, if you need to bind the ```:ToggleQuickFix``` to ```<C-b>```, you can do the following in your ```.vimrc```
+```vim
+" Key maps for vim-build
+nnoremap <silent> <C-b> :ToggleQuickFix<CR>
 ```
-
-## Command-line abbreviations
-
--   ```gpb``` → ```:GenerateBoilerPlate```
--   ```con``` → ```:CmakeOn```
--   ```sdm``` → ```:SetDebugMode```
--   ```srm``` → ```:SetReleaseMode```
--   ```sbm``` → ```:ShowBuildMode```
--   ```tqf``` → ```:ToggleQuickFix```
 
 
 ## Usage
@@ -108,25 +102,11 @@ This creates a starter project and initial build files.
 :Rebuild
 ```
 
-Quickfix
+###     Quickfix
 ```vim
 :ToggleQuickFix
 ```
 
-Or press:
-```vim
-<C-b>
-```
-
-###     Turn on The building functionalities 
-
-Open Vim in a directory containing ```CMakeLists.txt```, then run:
-```vim
-:CmakeOn
-```
-*Note that this is useful for one of these cases:
--   You didn't have the  ```CMakeLists.txt``` when you loaded the folder with vim
--   You had ```CMakeLists.txt``` on the folder but it wasn't your ```cwd``` (current working directory) yet.
 
 
 
@@ -154,3 +134,27 @@ project/
 -   ```:CompileCurrent``` uses ```compile_commands.json``` when it can resolve the current file.
 -   The generated CMake project creates a ```mySources``` library target for source files.
 
+
+
+## Command-line abbreviations ( Optional )
+If you need to set your own command lines abbreviations for the long vim commands, for example: ```gbp``` for ```:GenerateBoilerPlate```; or ```con``` for ```:CmakeOn```, you can make them in your ```~/.path/to/your/vim/plugins/vim-build/plugin/vim-build.vim```. Here are some examples:
+```vim
+cabbrev <expr> gbp   getcmdtype() ==# ':' && getcmdline() =~# '^gbp\%(\s\|$\)'   ? 'GenerateBoilerPlate' : 'gbp'
+cabbrev <expr> con   getcmdtype() ==# ':' && getcmdline() =~# '^con\%(\s\|$\)'   ? 'CmakeOn'             : 'con'
+cabbrev <expr> sdm   getcmdtype() ==# ':' && getcmdline() =~# '^sdm\%(\s\|$\)'   ? 'SetDebugMode'        : 'sdm'
+cabbrev <expr> srm   getcmdtype() ==# ':' && getcmdline() =~# '^srm\%(\s\|$\)'   ? 'SetReleaseMode'      : 'srm'
+cabbrev <expr> sbm   getcmdtype() ==# ':' && getcmdline() =~# '^sbm\%(\s\|$\)'   ? 'ShowBuildMode'       : 'sbm'
+cabbrev <expr> tqf   getcmdtype() ==# ':' && getcmdline() =~# '^tqf\%(\s\|$\)'   ? 'ToggleQuickFix'      : 'tqf'
+```
+
+
+
+###     Turn on The building functionalities 
+
+Open Vim in a directory containing ```CMakeLists.txt```, then run:
+```vim
+:CmakeOn
+```
+*Note that this is useful for one of these cases:
+-   You didn't have the  ```CMakeLists.txt``` when you loaded the folder with vim
+-   You had ```CMakeLists.txt``` on the folder but it wasn't your ```cwd``` (current working directory) yet.
