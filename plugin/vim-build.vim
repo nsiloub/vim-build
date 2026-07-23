@@ -31,7 +31,6 @@ cabbrev <expr> srm   getcmdtype() ==# ':' && getcmdline() =~# '^srm\%(\s\|$\)'  
 cabbrev <expr> sbm   getcmdtype() ==# ':' && getcmdline() =~# '^sbm\%(\s\|$\)'   ? 'ShowBuildMode'       : 'sbm'
 cabbrev <expr> tqf   getcmdtype() ==# ':' && getcmdline() =~# '^tqf\%(\s\|$\)'   ? 'ToggleQuickFix'      : 'tqf'
 
-nnoremap <silent> <C-b> :call vim_build#core#toggle_quickfix()<CR>
 
 if !exists('g:cpp_run_mappings_initialized')
   call vim_build#core#setup_run_mappings_from_arg()
