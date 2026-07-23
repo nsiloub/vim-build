@@ -1,61 +1,128 @@
-===================================================================
-===================================================================
-	
-	DOC: VIM-BUILD
+*vim-build.txt*  Vim-Build plugin reference
 
-===================================================================
-===================================================================
+==============================================================================
+VIM-BUILD                                                          *vim-build*
 
+This plugin provides CMake-oriented commands for C++ projects.
 
+------------------------------------------------------------------------------
+CONTENTS                                                        *vim-build-contents*
 
-*vim-build.txt*  Vim-Build plugin help
+  1. Commands.............. |vim-build-commands|
+  2. Mappings.............. |vim-build-mappings|
+  3. Configuration......... |vim-build-config|
+  4. Generator............. |vim-build-generator|
+  5. Notes................. |vim-build-notes|
 
-Vim-Build is a small helper for CMake C++ projects.
+------------------------------------------------------------------------------
+COMMANDS                                                      *vim-build-commands*
 
-Commands
+:GenerateBoilerPlate                                          *:GenerateBoilerPlate*
+    Prompt for a target directory and generate a C++ CMake project skeleton.
 
-:CMakeFolder
-    Load mappings for the current CMake project.
+:cmake-on                                                     *:CmakeOn* *:cmake-on*
+    Initialize plugin state for the current CMake project.
 
-:BuildDebug
-    Set build mode to Debug.
+:SetDebugMode                                                 *:SetDebugMode*
+    Set the active build mode to Debug.
 
-:BuildRelease
-    Set build mode to Release.
+:SetReleaseMode                                               *:SetReleaseMode*
+    Set the active build mode to Release.
 
-:BuildMode
-    Show the current build mode.
+:ShowBuildMode                                                *:ShowBuildMode*
+    Echo the current build mode.
 
-:CMakeGenerate [dir]
-    Run the CMake project generator script.
-    If [dir] is omitted, the current directory is used.
+:CompileAll                                                   *:CompileAll*
+    Build the shared sources target only.
 
-Mappings
+:CompileCurrent                                               *:CompileCurrent*
+    Build the target matching the current file using compile_commands.json
+    when available. Falls back to :CompileAll.
+
+:Build                                                        *:Build*
+    Build the current build directory.
+
+:RunCurrent                                                   *:RunCurrent*
+    Run the current project executable from bin/{Debug,Release}/.
+
+:BuildAndRun                                                  *:BuildAndRun*
+    Build the current project and run the resulting executable.
+
+:Clean                                                        *:Clean*
+    Clean the current build directory.
+
+:Rebuild                                                      *:Rebuild*
+    Clean and then build the current build directory.
+
+:ToggleQuickFix                                               *:ToggleQuickFix*
+    Toggle the quickfix window.
+
+------------------------------------------------------------------------------
+MAPPINGS                                                      *vim-build-mappings*
 
 <C-b>
-    Toggle quickfix window.
+    Toggle the quickfix window.
 
-<F2>
-    Build current configuration.
+Command-line abbreviations:
 
-<F3>
-    Run the built binary.
+  gpb   -> :GenerateBoilerPlate
+  con   -> :CmakeOn
+  sdm   -> :SetDebugMode
+  srm   -> :SetReleaseMode
+  sbm   -> :ShowBuildMode
+  tqf   -> :ToggleQuickFix
 
-<F4>
-    Clean current build directory.
+------------------------------------------------------------------------------
+CONFIGURATION                                                  *vim-build-config*
 
-<F5>
-    Build and run.
+g:cpp_build_mode                                              *g:cpp_build_mode*
+    Active build mode. Valid values: 'Debug' or 'Release'.
+    Default: 'Debug'
 
-Install
+g:cpp_project_name                                            *g:cpp_project_name*
+    Project name used for executable lookup.
+    Usually set automatically when a CMake project is loaded.
 
-Put this plugin under your Vim package path, for example:
+g:cpp_run_mappings_initialized                                *g:cpp_run_mappings_initialized*
+    Internal guard used by the plugin to avoid duplicate setup.
 
-    ~/.vim/pack/plugins/start/vim-build/
+------------------------------------------------------------------------------
+GENERATOR                                                    *vim-build-generator*
 
-Then run:
+The boilerplate generator creates:
 
-    :helptags ~/.vim/pack/plugins/start/vim-build/doc
+  - bin/Debug
+  - bin/Release
+  - build/Debug
+  - build/Release
+  - config
+  - include
+  - lib
+  - src/Sources
+  - src/Headers
 
-vim:tw=78:ts=8:ft=help:norl:
+It also writes:
+
+  - src/main.cpp
+  - src/Sources/__dummy.cpp
+  - include/Config.h.in
+  - CMakeLists.txt
+
+and builds Debug and Release once during initialization.
+
+------------------------------------------------------------------------------
+NOTES                                                          *vim-build-notes*
+
+The plugin expects a CMake project layout with a CMakeLists.txt in the current
+working directory.
+
+The build commands assume Dispatch is available.
+
+The generated CMake project uses:
+
+  - a mySources library target for source compilation
+  - an executable target named after the project directory
+  - compile_commands.json enabled in the build tree
+
+==============================================================================
 
