@@ -4,8 +4,127 @@
 
 let s:plugin_dir = fnamemodify(expand('<sfile>:p'), ':h:h:h')
 
+function! s:project_dir() abort
+  return get(g:, 'cpp_project_dir', getcwd())
+endfunction
+
+function! s:is_cmake_project(dir) abort
+  return filereadable(a:dir . '/CMakeLists.txt')
+endfunction
+
+function! s:is_enabled() abort
+  return get(g:, 'vim_build_state', 'off') ==# 'on'
+endfunction
+
+function! s:set_vim_build_state(state) abort
+  let g:vim_build_state = a:state
+endfunction
+
+function! vim_build#core#get_vim_build_state() abort
+  return get(g:, 'vim_build_state', 'off')
+endfunction
+
+function! s:define_build_commands() abort
+  command! -nargs=0 CmakeOff            call vim_build#core#disable_cmake_project()
+
+  command! -nargs=0 SetDebugMode        call vim_build#core#set_build_mode('Debug')
+  command! -nargs=0 SetReleaseMode      call vim_build#core#set_build_mode('Release')
+  command! -nargs=0 ShowBuildMode       echo "Current build mode: " . vim_build#core#get_build_mode()
+
+  command! -nargs=0 CompileAll          call vim_build#core#compile_all()
+  command! -nargs=0 CompileCurrentFile  call vim_build#core#compile_current_file()
+  command! -nargs=0 Build               call vim_build#core#build_current()
+  command! -nargs=0 RunPreviousBuilds   call vim_build#core#run_previous_builds()
+  command! -nargs=0 BuildAndRun         call vim_build#core#build_and_run_current()
+  command! -nargs=0 CleanBuilds         call vim_build#core#clean_current()
+  command! -nargs=0 Rebuild             call vim_build#core#rebuild_current()
+
+  command! -nargs=0 ToggleQuickFix       call vim_build#core#toggle_quickfix()
+endfunction
+
+function! s:remove_build_commands() abort
+  silent! delcommand CmakeOff
+
+  silent! delcommand SetDebugMode
+  silent! delcommand SetReleaseMode
+  silent! delcommand ShowBuildMode
+
+  silent! delcommand CompileAll
+  silent! delcommand CompileCurrentFile
+  silent! delcommand Build
+  silent! delcommand RunPreviousBuilds
+  silent! delcommand BuildAndRun
+  silent! delcommand CleanBuilds
+  silent! delcommand Rebuild
+
+  silent! delcommand ToggleQuickFix
+endfunction
+
+function! s:enable_vim_build(dir) abort
+  let g:cpp_project_dir = fnamemodify(a:dir, ':p:h')
+  let g:cpp_project_name = fnamemodify(g:cpp_project_dir, ':t')
+  if !exists('g:cpp_build_mode')
+    let g:cpp_build_mode = 'Debug'
+  endif
+  let g:cpp_run_mappings_initialized = 1
+  call s:set_vim_build_state('on')
+  call s:define_build_commands()
+endfunction
+
+function! s:disable_vim_build() abort
+  if exists('g:cpp_project_dir')
+    unlet g:cpp_project_dir
+  endif
+  if exists('g:cpp_project_name')
+    unlet g:cpp_project_name
+  endif
+  if exists('g:cpp_build_mode')
+    unlet g:cpp_build_mode
+  endif
+  if exists('g:cpp_run_mappings_initialized')
+    unlet g:cpp_run_mappings_initialized
+  endif
+  call s:set_vim_build_state('off')
+  call s:remove_build_commands()
+endfunction
+
+function! s:activate_if_cmake(dir) abort
+  if !s:is_cmake_project(a:dir)
+    return 0
+  endif
+
+  if s:is_enabled()
+    call s:enable_vim_build(a:dir)
+    echo "CMake mappings loaded for: " . g:cpp_project_dir
+    return 1
+  endif
+
+  if confirm('CMakeLists.txt found in this folder. Change to it and activate the build functionalities?', "&Yes\n&No", 2) != 1
+    return 0
+  endif
+
+  execute 'cd' fnameescape(fnamemodify(a:dir, ':p:h'))
+  call s:enable_vim_build(getcwd())
+  echo "CMake mappings loaded for: " . g:cpp_project_dir
+  return 1
+endfunction
+
+function! s:prompt_and_cd(dir) abort
+  if confirm('CMakeLists.txt found in this folder. Change to it and activate the build functionalities?', "&Yes\n&No", 2) != 1
+    return 0
+  endif
+  execute 'cd' fnameescape(fnamemodify(a:dir, ':p:h'))
+  call s:enable_vim_build(getcwd())
+  echo "CMake mappings loaded for: " . g:cpp_project_dir
+  return 1
+endfunction
 
 function! vim_build#core#toggle_quickfix() abort
+  if !s:is_enabled()
+    echo "VimBuildState: off"
+    return
+  endif
+
   if empty(filter(getwininfo(), 'v:val.quickfix'))
     copen
     cbottom
@@ -14,19 +133,8 @@ function! vim_build#core#toggle_quickfix() abort
   endif
 endfunction
 
-function! s:is_cmake_project(dir) abort
-  return filereadable(a:dir . '/CMakeLists.txt')
-endfunction
-
 function! s:get_project_dir() abort
-  if len(v:argv) == 1
-    let l:arg = v:argv[0]
-    if l:arg ==# '.'
-      return getcwd()
-    endif
-    return fnamemodify(expand(l:arg), ':p')
-  endif
-  return getcwd()
+  return s:project_dir()
 endfunction
 
 function! vim_build#core#get_build_mode() abort
@@ -34,6 +142,11 @@ function! vim_build#core#get_build_mode() abort
 endfunction
 
 function! vim_build#core#set_build_mode(mode) abort
+  if !s:is_enabled()
+    echo "VimBuildState is off"
+    return
+  endif
+
   if a:mode !=# 'Debug' && a:mode !=# 'Release'
     echo "Invalid build mode: " . a:mode
     return
@@ -43,19 +156,19 @@ function! vim_build#core#set_build_mode(mode) abort
 endfunction
 
 function! s:project_name() abort
-  return get(g:, 'cpp_project_name', fnamemodify(getcwd(), ':t'))
+  return get(g:, 'cpp_project_name', fnamemodify(s:project_dir(), ':t'))
 endfunction
 
 function! s:build_dir() abort
-  return 'build/' . vim_build#core#get_build_mode()
+  return s:project_dir() . '/build/' . vim_build#core#get_build_mode()
 endfunction
 
 function! s:exe_path() abort
-  return getcwd() . '/bin/' . vim_build#core#get_build_mode() . '/' . s:project_name()
+  return s:project_dir() . '/bin/' . vim_build#core#get_build_mode() . '/' . s:project_name()
 endfunction
 
 function! s:compile_commands_file() abort
-  return getcwd() . '/build/' . vim_build#core#get_build_mode() . '/compile_commands.json'
+  return s:project_dir() . '/build/' . vim_build#core#get_build_mode() . '/compile_commands.json'
 endfunction
 
 function! s:current_file() abort
@@ -67,11 +180,19 @@ function! s:run_shell(cmd) abort
 endfunction
 
 function! vim_build#core#compile_all() abort
-  " Compiles all modified sources in the project, without linking the final executable.
+  if !s:is_enabled()
+    echo "VimBuildState is off"
+    return
+  endif
   execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir()) . ' --target mySources'
 endfunction
 
 function! vim_build#core#compile_current_file() abort
+  if !s:is_enabled()
+    echo "VimBuildState is off"
+    return
+  endif
+
   let l:file = s:current_file()
   if empty(l:file)
     echo "No current file"
@@ -103,15 +224,23 @@ PY
     endif
   endif
 
-  " Fallback: compile the project sources without linking.
   call vim_build#core#compile_all()
 endfunction
 
 function! vim_build#core#build_current() abort
+  if !s:is_enabled()
+    echo "VimBuildState is off"
+    return
+  endif
   execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir())
 endfunction
 
 function! vim_build#core#run_previous_builds() abort
+  if !s:is_enabled()
+    echo "VimBuildState is off"
+    return
+  endif
+
   let l:exe = s:exe_path()
   if !filereadable(l:exe)
     echo "Executable not found: " . l:exe
@@ -121,6 +250,11 @@ function! vim_build#core#run_previous_builds() abort
 endfunction
 
 function! vim_build#core#build_and_run_current() abort
+  if !s:is_enabled()
+    echo "VimBuildState is off"
+    return
+  endif
+
   let l:exe = s:exe_path()
   let l:buildcmd = 'cmake --build ' . s:build_dir()
   execute 'Dispatch! sh -c ' . shellescape(l:buildcmd . ' && ' . l:exe)
@@ -134,41 +268,62 @@ function! s:clean_build(dir) abort
 endfunction
 
 function! vim_build#core#clean_current() abort
+  if !s:is_enabled()
+    echo "VimBuildState is off"
+    return
+  endif
   call s:clean_build(s:build_dir())
 endfunction
 
 function! vim_build#core#rebuild_current() abort
+  if !s:is_enabled()
+    echo "VimBuildState is off"
+    return
+  endif
   call vim_build#core#clean_current()
   call vim_build#core#build_and_run_current()
 endfunction
 
 function! s:setup_cmake_mappings() abort
-  let g:cpp_project_name = fnamemodify(s:get_project_dir(), ':t')
-  if !exists('g:cpp_build_mode')
-    let g:cpp_build_mode = 'Debug'
+  if !exists('g:cpp_project_dir')
+    call s:enable_vim_build(getcwd())
+    return
   endif
-  echo "CMake mappings loaded for: " . getcwd()
+  call s:set_vim_build_state('on')
+  call s:define_build_commands()
+  echo "CMake mappings loaded for: " . g:cpp_project_dir
+endfunction
+
+function! vim_build#core#startup_project_detection() abort
+  if argc() == 1 && isdirectory(argv(0))
+    let l:dir = fnamemodify(argv(0), ':p')
+    if s:is_cmake_project(l:dir)
+      call s:prompt_and_cd(l:dir)
+      return
+    endif
+  endif
+
+  if s:is_enabled()
+    call s:activate_if_cmake(getcwd())
+  endif
+endfunction
+
+function! vim_build#core#directory_changed() abort
+  if s:activate_if_cmake(getcwd())
+    return
+  endif
 endfunction
 
 function! vim_build#core#setup_run_mappings_from_arg() abort
-  if exists('g:cpp_run_mappings_initialized')
-    return
-  endif
-  let g:cpp_run_mappings_initialized = 1
-
-  let l:project_dir = s:get_project_dir()
-  if !s:is_cmake_project(l:project_dir)
-    return
-  endif
-
-  if confirm('CMakeLists.txt found. Load as a CMake project?', "&Yes\n&No", 2) != 1
-    return
-  endif
-
-  call s:setup_cmake_mappings()
+  return vim_build#core#startup_project_detection()
 endfunction
 
 function! vim_build#core#setup_cmake_project() abort
+  if get(g:, 'vim_build_state', 'off') ==# 'on'
+    echo "VimBuildState is already on"
+    return
+  endif
+
   let l:project_dir = getcwd()
 
   if !s:is_cmake_project(l:project_dir)
@@ -176,7 +331,13 @@ function! vim_build#core#setup_cmake_project() abort
     return
   endif
 
-  call s:setup_cmake_mappings()
+  call s:enable_vim_build(l:project_dir)
+  echo "CMake mappings loaded for: " . g:cpp_project_dir
+endfunction
+
+function! vim_build#core#disable_cmake_project() abort
+  call s:disable_vim_build()
+  echo "CMake features disabled"
 endfunction
 
 function! vim_build#core#cmake_generate(...) abort
@@ -187,6 +348,10 @@ function! vim_build#core#cmake_generate(...) abort
     return
   endif
 
+  if !s:is_enabled()
+    call s:enable_vim_build(getcwd())
+  endif
+
   let l:target = input('Enter project folder/path: ', getcwd())
   if empty(l:target)
     return
@@ -195,9 +360,7 @@ function! vim_build#core#cmake_generate(...) abort
   call term_start(['sh', l:script, l:target], {'curwin': v:true})
 endfunction
 
-
-
 "=============================================================================
-" 		END AUTOLOAD: VIM-BUILD
+" 		END AUTLOAD: VIM-BUILD
 "=============================================================================
 
