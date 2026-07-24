@@ -18,7 +18,7 @@ cd -- "$targetDir"
 
 projectName="$(basename "$targetDir")"
 
-mkdir -p bin/Debug bin/Release build/Debug build/Release config include lib src/Sources src/Headers
+mkdir -p bin/Debug bin/Release build/Debug build/Release config include lib src/Sources src/Headers data
 
 cat > src/Sources/__dummy.cpp <<'EOF'
 // Intentionally empty.
