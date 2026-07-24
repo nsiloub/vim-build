@@ -22,6 +22,7 @@ It provides commands for:
 - running the last built executable
 - cleaning and rebuilding
 - toggling quickfix
+- turning the vim-build functionalities on and off
 
 ---
 
@@ -86,6 +87,11 @@ Plug 'nsiloub/vim-build'
 -   ```:GenerateBoilerPlate``` — Prompt for a folder and generate a new C++ CMake project skeleton.
 
 -   ```:CmakeOn``` — initialize plugin state for the current CMake project. 
+
+-   ```:CmakeOff``` — Turn the vim-build functionalities off, except for ```VimBuildState```, ```GenerateBoilerPlate```, and ```CmakeOn```.
+
+-   ```:VimBuildState```— Shows the state of vim-build features.
+
 
 ### Build mode
 
@@ -191,7 +197,7 @@ project/
 └── CMakeLists.txt
 ```
 
-###     Notes
+##     Notes
 
 -   The generated CMake project creates a ```mySources``` library target for source files.
 -   ```src/Sources/__dummy.cpp```
@@ -199,8 +205,37 @@ project/
 
 
 
+### VimBuildState
 
-## Command-line abbreviations ( Optional )
+`vim-build` is off by default.
+
+#### Available when off
+- `:VimBuildState`
+- `:GenerateBoilerPlate`
+- `:CmakeOn`
+
+#### How it turns on
+`vim-build` becomes active only in these cases:
+
+1. You open a folder or file from the terminal, and that location contains a `CMakeLists.txt`, then accept the prompt.
+2. You change Vim’s current working directory to a folder containing a `CMakeLists.txt`, then accept the prompt.
+3. You run `:CmakeOn` inside Vim.
+4. You run `:GenerateBoilerPlate`, which enables `vim-build` if needed.
+
+#### When already on
+If `VimBuildState` is already `on`, running `:CmakeOn` will simply report that it is already enabled.
+
+#### When on
+All `vim-build` commands become available, including:
+- `:CmakeOff`
+- build and run commands
+- debug/release mode commands
+- quickfix toggle
+
+
+
+
+### Command-line abbreviations ( Optional )
 If you need to set your own command lines abbreviations for the long vim commands, for example: ```gbp``` for ```:GenerateBoilerPlate```; or ```con``` for ```:CmakeOn```, you can make them in your ``plugin/vim-build.vim```. Here are some examples:
 ```vim
 cabbrev <expr> gbp   getcmdtype() ==# ':' && getcmdline() =~# '^gbp\\%(\s\|\$\\)'   ? 'GenerateBoilerPlate' : 'gbp'

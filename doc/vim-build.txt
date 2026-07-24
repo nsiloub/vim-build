@@ -20,11 +20,21 @@ COMMANDS                                                      *vim-build-command
 :GenerateBoilerPlate                                          *:GenerateBoilerPlate*
     Prompt for a target directory and generate a C++ CMake project skeleton.
 
+
 :cmake-on                                                     *:CmakeOn* *:cmake-on*
     Initialize plugin state for the current CMake project.
 
+
+:cmake-off						      *:CmakeOff* *:cmake-off*
+     Turn the vim-build functionalities off, except for VimBuildState, GenerateBoilerPlate, and CmakeOn.
+
+:VimBuildState                                                *:*VimBuildState*
+     Shows the state of vim-build features.
+
+
 :SetDebugMode                                                 *:SetDebugMode*
     Set the active build mode to Debug.
+
 
 :SetReleaseMode                                               *:SetReleaseMode*
     Set the active build mode to Release.
