@@ -33,26 +33,25 @@ COMMANDS                                                      *vim-build-command
     Echo the current build mode.
 
 :CompileAll                                                   *:CompileAll*
-    Build the shared sources target only.
+    Compile all modified source files in the project, without linking.
 
-:CompileCurrent                                               *:CompileCurrent*
-    Build the target matching the current file using compile_commands.json
-    when available. Falls back to :CompileAll.
+:CompileCurrentFile                                           *:CompileCurrentFile*
+    Compile the current file without linking.
 
 :Build                                                        *:Build*
-    Build the current build directory.
+    Compile all sources and link the executable, without running it.
 
-:RunCurrent                                                   *:RunCurrent*
-    Run the current project executable from bin/{Debug,Release}/.
+:RunPreviousBuilds                                            *:RunPreviousBuilds*
+    Run the previously generated executable for the current build mode.
 
 :BuildAndRun                                                  *:BuildAndRun*
-    Build the current project and run the resulting executable.
+    Compile all sources, link the executable, and run it.
 
-:Clean                                                        *:Clean*
+:CleanBuilds                                                  *:CleanBuilds*
     Clean the current build directory.
 
 :Rebuild                                                      *:Rebuild*
-    Clean and then build the current build directory.
+    Clean, compile, link, and run the current build mode.
 
 :ToggleQuickFix                                               *:ToggleQuickFix*
     Toggle the quickfix window.

@@ -4,8 +4,7 @@
 #	 ||				||
 # 	 ||	C++ CMake Init script	||
 #        ||				||
-################################################################	
-#!/usr/bin/env bash
+################################################################
 
 set -euo pipefail
 
@@ -71,6 +70,8 @@ project(${projectName} VERSION 1.0)
 set(CMAKE_CXX_STANDARD ${cstVersion})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 file(GLOB_RECURSE SRC_SOURCES CONFIGURE_DEPENDS
   "\${CMAKE_CURRENT_SOURCE_DIR}/src/Sources/*.cpp"
 )
@@ -95,8 +96,6 @@ set_target_properties(${projectName}
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "\${PROJECT_SOURCE_DIR}/bin/\$<CONFIG>"
 )
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 configure_file(include/Config.h.in
     "\${CMAKE_CURRENT_SOURCE_DIR}/include/Config.h"

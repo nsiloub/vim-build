@@ -8,50 +8,150 @@ Still working on it :)
 # vim-build
 
 
-A small Vim plugin for CMake-based C++ workflows.
+# vim-build
+
+A Vim plugin for working with C++ CMake projects.
+
+It provides commands for:
+
+- generating a boilerplate C++ CMake project
+- loading an existing CMake project
+- switching build mode between Debug and Release
+- compiling sources without linking
+- building the executable
+- running the last built executable
+- cleaning and rebuilding
+- toggling quickfix
+
+---
 
 ## Features
 
-- Generate a starter C++ CMake project
-- Detect and initialize existing CMake projects
-- Switch between Debug and Release build modes
-- Build, run, clean, and rebuild from Vim
-- Toggle the quickfix window
-- Compile the current file using `compile_commands.json` when available
+- CMake project bootstrap generator
+- Debug / Release build mode support
+- Project-aware executable path lookup
+- Compile-only commands
+- Build-only command
+- Build-and-run command
+- Clean and rebuild commands
+- Quickfix toggle
+- Optional command-line abbreviations
+
+---
 
 ## Requirements
 
-- Vim with `:terminal` / `term_start()`
-- [vim-dispatch](https://github.com/tpope/vim-dispatch)
+- Vim with `term_start()` support
 - CMake
-- Bash
-- Python 3
+- A C++ compiler toolchain
+- [vim-dispatch](https://github.com/tpope/vim-dispatch) for `Dispatch`
+- Bash for the boilerplate generator script
+
+---
 
 ## Installation
 
-Use your preferred plugin manager, or copy the plugin into your Vim runtimepath.
+- Manual installation
+Place the plugin in your Vim runtime path, for example:
 
+```txt
+~/.vim/
+├── plugin/vim-build.vim
+├── autoload/vim\_build/core.vim
+├── doc/vim-build.txt
+└── scripts/cmake-init-cpp.sh
+```
+Then make sure the script is executable:
+```sh
+chmod +x scripts/cmake-init-cpp.sh
+```
+
+- Using a plugin manager
 Example with a plugin manager [vim-plug](https://github.com/junegunn/vim-plug) :
 
 ```vim
 Plug 'nsiloub/vim-build'
+
+:PlugInstall
 ```
+
+
+
+
 
 ## Commands
 
--   ```:GenerateBoilerPlate``` — prompt for a target directory and generate a C++ CMake project skeleton<br>
--   ```:CmakeOn``` — initialize plugin state for the current CMake project<br>
--   ```:SetDebugMode``` — set active build mode to Debug<br>
--   ```:SetReleaseMode``` — set active build mode to Release<br>
--   ```:ShowBuildMode``` — display the current build mode<br>
--   ```:CompileAll``` — build the shared sources target only<br>
--   ```:CompileCurrent``` — build the current file using compile_commands.json when available<br>
--   ```:Build``` — build the current build directory<br>
--   ```:RunCurrent``` — run the current project executable<br>
--   ```:BuildAndRun``` — build and run the current project<br>
--   ```:Clean``` — clean the current build directory<br>
--   ```:Rebuild``` — clean and rebuild the current build directory<br>
--   ```:ToggleQuickFix``` — toggle the quickfix window<br>
+### Project setup
+
+-   ```:GenerateBoilerPlate``` — Prompt for a folder and generate a new C++ CMake project skeleton.
+
+-   ```:CmakeOn``` — initialize plugin state for the current CMake project. 
+
+### Build mode
+
+-   ```:SetDebugMode``` — set active build mode to Debug 
+-   ```:SetReleaseMode``` — set active build mode to Release 
+-   ```:ShowBuildMode``` — display the current build mode 
+
+### Build commands
+-   ```:CompileAll``` — Compile all modified source files in the project, without linking.
+-   ```:CompileCurrentFile``` — Compile only the current file, without linking.
+-   ```:Build``` — Compile all sources and link the executable, without running it.
+-   ```:RunPreviousBuilds``` — Run the previously generated executable for the current build mode.
+-   ```:BuildAndRun``` — Compile all sources, link the executable, and run it.
+-   ```:Clean``` — clean the current build directory.
+-   ```:Rebuild``` — Clean, compile, link, and run the current build mode.
+-   ```:ToggleQuickFix``` — toggle the quickfix window.
+
+
+
+## Command behavior
+
+**```CompileAll```**
+
+This runs the builds only:
+
+-   no final executable link step
+-   useful when you want to check compilation of project sources
+
+**```CompileCurrentFile```**
+
+This tries to use compile_commands.json to compile the current file directly.
+
+If compile commands are unavailable or the file cannot be resolved, it falls back to CompileAll.
+**```Build```**
+
+This builds the active build directory:
+
+-   build/Debug for Debug mode
+-   build/Release for Release mode
+
+**```RunPreviousBuilds```**
+
+This runs the executable from:
+
+-   bin/Debug/<project-name>
+-   bin/Release/<project-name>
+
+depending on the active build mode.  
+
+**```BuildAndRun```**
+
+This performs build first, then runs the executable.  
+
+**```Rebuild```**
+
+This cleans the build tree and then performs the build-and-run flow.
+
+**```:CmakeOn```**
+This is only useful in cases where you didn't have a ```CMakelists.txt``` in your working directory when you loaded vim, and don't want to generate boilerplate.  
+
+
+
+
+
+
+
 
 
 ## Mappings
@@ -69,44 +169,6 @@ nnoremap <silent> <C-b> :ToggleQuickFix<CR>
 Either by ```vim .```(when you load your project), or inside vim, if you use tabs for example, you can do ```:tcd /path/to/your/project/``` or something similar.
 
 
-###     Generate a new project
-```vim
-:GenerateBoilerPlate
-```
-
-This creates a starter project and initial build files.
-
-###     Build and run
-```vim
-:Build
-:RunCurrent
-:BuildAndRun
-```
-
-###     Select build mode
-```vim
-:SetDebugMode
-:SetReleaseMode
-:ShowBuildMode
-```
-
-###     Compile actions
-```vim
-:CompileAll
-:CompileCurrent
-```
-
-###     Clean / rebuild
-```vim
-:Clean
-:Rebuild
-```
-
-###     Quickfix
-```vim
-:ToggleQuickFix
-```
-
 
 
 
@@ -122,39 +184,37 @@ project/
 ├── config/
 ├── include/
 ├── lib/
-└── src/
-    ├── Headers/
-    ├── Sources/
-    └── main.cpp
+├── src/
+│   ├── Headers/
+│   ├── Sources/
+│   └── main.cpp
+└── CMakeLists.txt
 ```
 
 ###     Notes
 
--   ```:RunCurrent``` runs the executable from ```bin/{Debug,Release}/<project-name>```.
--   ```:CompileCurrent``` uses ```compile_commands.json``` when it can resolve the current file.
 -   The generated CMake project creates a ```mySources``` library target for source files.
+-   ```src/Sources/__dummy.cpp```
+-   ```include/Config.h.in```
+
 
 
 
 ## Command-line abbreviations ( Optional )
-If you need to set your own command lines abbreviations for the long vim commands, for example: ```gbp``` for ```:GenerateBoilerPlate```; or ```con``` for ```:CmakeOn```, you can make them in your ```~/.path/to/your/vim/plugins/vim-build/plugin/vim-build.vim```. Here are some examples:
+If you need to set your own command lines abbreviations for the long vim commands, for example: ```gbp``` for ```:GenerateBoilerPlate```; or ```con``` for ```:CmakeOn```, you can make them in your ``plugin/vim-build.vim```. Here are some examples:
 ```vim
-cabbrev <expr> gbp   getcmdtype() ==# ':' && getcmdline() =~# '^gbp\%(\s\|$\)'   ? 'GenerateBoilerPlate' : 'gbp'
-cabbrev <expr> con   getcmdtype() ==# ':' && getcmdline() =~# '^con\%(\s\|$\)'   ? 'CmakeOn'             : 'con'
-cabbrev <expr> sdm   getcmdtype() ==# ':' && getcmdline() =~# '^sdm\%(\s\|$\)'   ? 'SetDebugMode'        : 'sdm'
-cabbrev <expr> srm   getcmdtype() ==# ':' && getcmdline() =~# '^srm\%(\s\|$\)'   ? 'SetReleaseMode'      : 'srm'
-cabbrev <expr> sbm   getcmdtype() ==# ':' && getcmdline() =~# '^sbm\%(\s\|$\)'   ? 'ShowBuildMode'       : 'sbm'
-cabbrev <expr> tqf   getcmdtype() ==# ':' && getcmdline() =~# '^tqf\%(\s\|$\)'   ? 'ToggleQuickFix'      : 'tqf'
+cabbrev <expr> gbp   getcmdtype() ==# ':' && getcmdline() =~# '^gbp\\%(\s\|\$\\)'   ? 'GenerateBoilerPlate' : 'gbp'
+cabbrev <expr> con   getcmdtype() ==# ':' && getcmdline() =~# '^con\\%(\s\|\$\\)'   ? 'CmakeOn'             : 'con'
+cabbrev <expr> sdm   getcmdtype() ==# ':' && getcmdline() =~# '^sdm\\%(\s\|\$\\)'   ? 'SetDebugMode'        : 'sdm'
+cabbrev <expr> srm   getcmdtype() ==# ':' && getcmdline() =~# '^srm\\%(\s\|\$\\)'   ? 'SetReleaseMode'      : 'srm'
+cabbrev <expr> sbm   getcmdtype() ==# ':' && getcmdline() =~# '^sbm\\%(\s\|\$\\)'   ? 'ShowBuildMode'       : 'sbm'
+cabbrev <expr> cbf   getcmdtype() ==# ':' && getcmdline() =~# '^cbf\\%(\s\|\$\\)'   ? 'CompileCurrentFile'  : 'cbf'
+cabbrev <expr> cba   getcmdtype() ==# ':' && getcmdline() =~# '^cba\\%(\s\|\$\\)'   ? 'CompileAll'          : 'cba'
+cabbrev <expr> bd    getcmdtype() ==# ':' && getcmdline() =~# '^bd\\%(\s\|\$\\)'    ? 'Build'               : 'bd'
+cabbrev <expr> rpb   getcmdtype() ==# ':' && getcmdline() =~# '^rpb\\%(\s\|\$\\)'   ? 'RunPreviousBuilds'   : 'rpb'
+cabbrev <expr> bar   getcmdtype() ==# ':' && getcmdline() =~# '^bar\\%(\s\|\$\\)'   ? 'BuildAndRun'         : 'bar'
+cabbrev <expr> clb   getcmdtype() ==# ':' && getcmdline() =~# '^clb\\%(\s\|\$\\)'   ? 'CleanBuilds'         : 'clb'
+cabbrev <expr> rb    getcmdtype() ==# ':' && getcmdline() =~# '^rb\\%(\s\|\$\\)'    ? 'Rebuild'             : 'rb'
+cabbrev <expr> tqf   getcmdtype() ==# ':' && getcmdline() =~# '^tqf\\%(\s\|\$\\)'   ? 'ToggleQuickFix'      : 'tqf'
 ```
 
-
-
-###     Turn on The building functionalities 
-
-Open Vim in a directory containing ```CMakeLists.txt```, then run:
-```vim
-:CmakeOn
-```
-*Note that this is useful for one of these cases:
--   You didn't have the  ```CMakeLists.txt``` when you loaded the folder with vim
--   You had ```CMakeLists.txt``` on the folder but it wasn't your ```cwd``` (current working directory) yet.
