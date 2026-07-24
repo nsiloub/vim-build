@@ -186,6 +186,7 @@ project/
 │   ├── Debug/
 │   └── Release/
 ├── config/
+├── data/
 ├── include/
 ├── lib/
 ├── src/
