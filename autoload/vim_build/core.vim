@@ -67,11 +67,11 @@ function! s:run_shell(cmd) abort
 endfunction
 
 function! vim_build#core#compile_all() abort
-  " Compiles the project sources without linking the final executable.
+  " Compiles all modified sources in the project, without linking the final executable.
   execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir()) . ' --target mySources'
 endfunction
 
-function! vim_build#core#compile_current() abort
+function! vim_build#core#compile_current_file() abort
   let l:file = s:current_file()
   if empty(l:file)
     echo "No current file"
@@ -81,7 +81,7 @@ function! vim_build#core#compile_current() abort
   let l:cc = s:compile_commands_file()
   if filereadable(l:cc)
     let l:cmd = 'python3 - <<''PY''
-import json, os, shlex, subprocess, sys
+import json, os, sys
 cc = sys.argv[1]
 src = os.path.abspath(sys.argv[2])
 with open(cc, "r", encoding="utf-8") as f:
@@ -111,7 +111,7 @@ function! vim_build#core#build_current() abort
   execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir())
 endfunction
 
-function! vim_build#core#run_current() abort
+function! vim_build#core#run_previous_builds() abort
   let l:exe = s:exe_path()
   if !filereadable(l:exe)
     echo "Executable not found: " . l:exe
@@ -139,7 +139,7 @@ endfunction
 
 function! vim_build#core#rebuild_current() abort
   call vim_build#core#clean_current()
-  call vim_build#core#build_current()
+  call vim_build#core#build_and_run_current()
 endfunction
 
 function! s:setup_cmake_mappings() abort

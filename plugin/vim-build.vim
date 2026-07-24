@@ -15,11 +15,11 @@ command! -nargs=0 SetReleaseMode      call vim_build#core#set_build_mode('Releas
 command! -nargs=0 ShowBuildMode       echo "Current build mode: " . vim_build#core#get_build_mode()
 
 command! -nargs=0 CompileAll          call vim_build#core#compile_all()
-command! -nargs=0 CompileCurrent      call vim_build#core#compile_current()
+command! -nargs=0 CompileCurrentFile  call vim_build#core#compile_current_file()
 command! -nargs=0 Build               call vim_build#core#build_current()
-command! -nargs=0 RunCurrent          call vim_build#core#run_current()
+command! -nargs=0 RunPreviousBuilds   call vim_build#core#run_previous_builds()
 command! -nargs=0 BuildAndRun         call vim_build#core#build_and_run_current()
-command! -nargs=0 Clean               call vim_build#core#clean_current()
+command! -nargs=0 CleanBuilds         call vim_build#core#clean_current()
 command! -nargs=0 Rebuild             call vim_build#core#rebuild_current()
 
 command! -nargs=0 ToggleQuickFix       call vim_build#core#toggle_quickfix()
