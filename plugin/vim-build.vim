@@ -23,6 +23,14 @@ autocmd DirChanged * call vim_build#core#directory_changed()
 "cabbrev <expr> sbm   getcmdtype() ==# ':' && getcmdline() =~# '^sbm\%(\s\|$\)'   ? 'ShowBuildMode'       : 'sbm'
 "cabbrev <expr> tqf   getcmdtype() ==# ':' && getcmdline() =~# '^tqf\%(\s\|$\)'   ? 'ToggleQuickFix'      : 'tqf'
 
+
+
+" Key maps for vim-build
+nnoremap <silent> <C-m> :ToggleQuickFix<CR>
+nnoremap <silent> <C-b> :BuildAndRun<CR>
+nnoremap <silent> <C-b>c :CleanBuilds<CR>
+
+
 " =========================
 " END VIM-BUILD
 " =========================
