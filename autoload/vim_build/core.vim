@@ -2,6 +2,10 @@
 " AUTOLOAD: VIM-BUILD
 "=============================================================================
 
+let s:run_buffer = -1
+
+
+
 let s:plugin_dir = fnamemodify(expand('<sfile>:p'), ':h:h:h')
 
 function! s:project_dir() abort
@@ -24,6 +28,7 @@ function! vim_build#core#get_vim_build_state() abort
   return get(g:, 'vim_build_state', 'off')
 endfunction
 
+" Register commands
 function! s:define_build_commands() abort
   command! -nargs=0 CmakeOff            call vim_build#core#disable_cmake_project()
 
@@ -40,6 +45,9 @@ function! s:define_build_commands() abort
   command! -nargs=0 Rebuild             call vim_build#core#rebuild_current()
 
   command! -nargs=0 ToggleQuickFix       call vim_build#core#toggle_quickfix()
+
+  command! -nargs=0 ShowOutputs call vim_build#core#show_run_output()
+
 endfunction
 
 function! s:remove_build_commands() abort
@@ -58,6 +66,8 @@ function! s:remove_build_commands() abort
   silent! delcommand Rebuild
 
   silent! delcommand ToggleQuickFix
+  silent! delcommand ShowOutputs
+
 endfunction
 
 function! s:enable_vim_build(dir) abort
@@ -255,6 +265,8 @@ function! s:run_in_terminal(cmd) abort
 
   botright 12new
   call term_start(a:cmd, {'curwin': 1, 'term_finish': 'open'})
+  let s:run_buffer = bufnr('%')
+  setlocal bufhidden=hide
 endfunction
 
 
@@ -287,7 +299,15 @@ function! vim_build#core#build_and_run_current() abort
 endfunction
 
 
+function! vim_build#core#show_run_output() abort
+  if s:run_buffer < 0 || !bufexists(s:run_buffer)
+    echo "No saved run output"
+    return
+  endif
 
+  execute 'botright sbuffer ' . s:run_buffer
+  resize 12
+endfunction
 
 
 

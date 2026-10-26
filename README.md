@@ -106,6 +106,8 @@ Plug 'nsiloub/vim-build'
 -   ```:Clean``` — clean the current build directory.
 -   ```:Rebuild``` — Clean, compile, link, and run the current build mode.
 -   ```:ToggleQuickFix``` — toggle the quickfix window.
+-   ```:ShowOutputs``` — Shows the output of the run/build commands in a quickfix-like window. Note: it can't be ```:copen``` nor ```:cclose```, so use ```:q``` 
+
 
 
 
@@ -159,12 +161,16 @@ This is only useful in cases where you didn't have a ```CMakelists.txt``` in you
 
 
 ## Mappings
-You can set your own keybindings to the commands as you wish, in your ```.vimrc``` file.  
-For example, if you need to bind the ```:ToggleQuickFix``` to ```<C-b>```, you can do the following in your ```.vimrc```
+You can set your own keybindings to the commands as you wish, in your ```.vimrc``` file.
+For example, if you need to bind the ```:ToggleQuickFix``` to ```<C-m>```, you can do the following in your ```.vimrc```  
+Here are some default bindings i've set in ```~/.vim/plugged/vim-build/plugin/vim-build.vim```
 ```vim
 " Key maps for vim-build
-nnoremap <silent> <C-b> :ToggleQuickFix<CR>
+nnoremap <silent> <C-m> :ToggleQuickFix<CR>
+nnoremap <silent> <C-b> :BuildAndRun<CR>
+nnoremap <silent> <C-b>c :CleanBuilds<CR>
 ```
+Make sure to change them as you like.
 
 
 ## Usage
