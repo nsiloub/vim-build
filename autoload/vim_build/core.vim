@@ -241,6 +241,24 @@ function! vim_build#core#build_current() abort
   execute 'Dispatch cmake --build ' . fnameescape(s:build_dir())
 endfunction
 
+
+
+" For interactivity in the editor. This requires a vim with
+" a term_start() support. This could be checked with
+":echo has('terminal'). 1=> has it; 0=>no
+"
+function! s:run_in_terminal(cmd) abort
+  if !has('terminal')
+    echoerr "This Vim was built without terminal support"
+    return
+  endif
+
+  botright 12new
+  call term_start(a:cmd, {'curwin': 1, 'term_finish': 'open'})
+endfunction
+
+
+
 function! vim_build#core#run_previous_builds() abort
   if !s:is_enabled()
     echo "VimBuildState is off"
@@ -252,7 +270,8 @@ function! vim_build#core#run_previous_builds() abort
     echo "Executable not found: " . l:exe
     return
   endif
-  execute 'Dispatch ' . fnameescape(l:exe)
+
+  call s:run_in_terminal([l:exe])
 endfunction
 
 function! vim_build#core#build_and_run_current() abort
@@ -261,10 +280,17 @@ function! vim_build#core#build_and_run_current() abort
     return
   endif
 
-  let l:exe = s:exe_path()
-  let l:buildcmd = 'cmake --build ' . s:build_dir()
-  execute 'Dispatch sh -c ' . shellescape(l:buildcmd . ' && ' . l:exe)
+  let l:cmd = 'cmake --build ' . shellescape(s:build_dir())
+        \ . ' && exec ' . shellescape(s:exe_path())
+
+  call s:run_in_terminal(['sh', '-c', l:cmd])
 endfunction
+
+
+
+
+
+
 
 function! s:clean_build(dir) abort
   let l:prompt = (a:dir =~# 'Debug') ? 'Clean Debug build directory?' : 'Clean Release build directory?'
