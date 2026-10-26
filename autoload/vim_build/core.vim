@@ -175,8 +175,14 @@ function! s:current_file() abort
   return expand('%:p')
 endfunction
 
+" If you don't want the quickfix window to pop up
+" automatically after an operation (you want it only to run 
+" in background), add a bang (!) after the Dispatch!. For example:
+" execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir()) . ' --target mySources'
+" In That case you'll need to run :Copen manually
+
 function! s:run_shell(cmd) abort
-  execute 'Dispatch! sh -c ' . shellescape(a:cmd)
+  execute 'Dispatch sh -c ' . shellescape(a:cmd)
 endfunction
 
 function! vim_build#core#compile_all() abort
@@ -184,7 +190,7 @@ function! vim_build#core#compile_all() abort
     echo "VimBuildState is off"
     return
   endif
-  execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir()) . ' --target mySources'
+  execute 'Dispatch cmake --build ' . fnameescape(s:build_dir()) . ' --target mySources'
 endfunction
 
 function! vim_build#core#compile_current_file() abort
@@ -232,7 +238,7 @@ function! vim_build#core#build_current() abort
     echo "VimBuildState is off"
     return
   endif
-  execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir())
+  execute 'Dispatch cmake --build ' . fnameescape(s:build_dir())
 endfunction
 
 function! vim_build#core#run_previous_builds() abort
@@ -257,13 +263,13 @@ function! vim_build#core#build_and_run_current() abort
 
   let l:exe = s:exe_path()
   let l:buildcmd = 'cmake --build ' . s:build_dir()
-  execute 'Dispatch! sh -c ' . shellescape(l:buildcmd . ' && ' . l:exe)
+  execute 'Dispatch sh -c ' . shellescape(l:buildcmd . ' && ' . l:exe)
 endfunction
 
 function! s:clean_build(dir) abort
   let l:prompt = (a:dir =~# 'Debug') ? 'Clean Debug build directory?' : 'Clean Release build directory?'
   if confirm(l:prompt, "&Yes\n&No", 2) == 1
-    execute 'Dispatch! cmake --build ' . fnameescape(a:dir) . ' --target clean'
+    execute 'Dispatch cmake --build ' . fnameescape(a:dir) . ' --target clean'
   endif
 endfunction
 

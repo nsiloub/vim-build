@@ -231,6 +231,10 @@ All `vim-build` commands become available, including:
 - debug/release mode commands
 - quickfix toggle
 
+#### Quickfix window pop up tips
+If you don't want the quickfix window to pop up automatically after an operation (you want it to run only in background), add a bang (!)  after the Dispatch! in the file ```~/.vim/autoload/vim_build/core.vim``` For example:
+    execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir()) . ' --target mySources'
+    In That case you'll need to run :Copen manually
 
 
 
