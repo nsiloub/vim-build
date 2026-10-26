@@ -29,6 +29,7 @@ autocmd DirChanged * call vim_build#core#directory_changed()
 nnoremap <silent> <C-m> :ToggleQuickFix<CR>
 nnoremap <silent> <C-b> :BuildAndRun<CR>
 nnoremap <silent> <C-b>c :CleanBuilds<CR>
+nnoremap <silent> <C-b>s :ShowOutputs<CR>
 
 
 " =========================

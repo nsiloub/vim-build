@@ -169,6 +169,7 @@ Here are some default bindings i've set in ```~/.vim/plugged/vim-build/plugin/vi
 nnoremap <silent> <C-m> :ToggleQuickFix<CR>
 nnoremap <silent> <C-b> :BuildAndRun<CR>
 nnoremap <silent> <C-b>c :CleanBuilds<CR>
+nnoremap <silent> <C-b>s :ShowOutputs<CR>
 ```
 Make sure to change them as you like.
 
