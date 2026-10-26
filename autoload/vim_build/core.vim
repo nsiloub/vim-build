@@ -126,7 +126,7 @@ function! vim_build#core#toggle_quickfix() abort
   endif
 
   if empty(filter(getwininfo(), 'v:val.quickfix'))
-    copen
+    Copen
     cbottom
   else
     cclose
