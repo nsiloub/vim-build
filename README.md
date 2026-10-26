@@ -231,11 +231,21 @@ All `vim-build` commands become available, including:
 - debug/release mode commands
 - quickfix toggle
 
+#### Quickfix window pop up tips
+If you don't want the quickfix window to pop up automatically after an operation (you want it to run only in background), add a bang (!)  after the Dispatch! in the file ```~/.vim/autoload/vim_build/core.vim``` For example:
+    execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir()) . ' --target mySources'
+    In That case you'll need to run :Copen manually  
+<br>
+
+For interactivity in the editor. This requires a vim with
+a ***term_start()*** support. This could be checked with
+```:echo has('terminal')```. If 1=> has it; 0=> doesn't
+
 
 
 
 ### Command-line abbreviations ( Optional )
-If you need to set your own command lines abbreviations for the long vim commands, for example: ```gbp``` for ```:GenerateBoilerPlate```; or ```con``` for ```:CmakeOn```, you can make them in your ``plugin/vim-build.vim```. Here are some examples:
+If you need to set your own command lines abbreviations for the long vim commands, for example: ```gbp``` for ```:GenerateBoilerPlate```; or ```con``` for ```:CmakeOn```, you can make them in your ```plugin/vim-build.vim```. Here are some examples:
 ```vim
 cabbrev <expr> gbp   getcmdtype() ==# ':' && getcmdline() =~# '^gbp\\%(\s\|\$\\)'   ? 'GenerateBoilerPlate' : 'gbp'
 cabbrev <expr> con   getcmdtype() ==# ':' && getcmdline() =~# '^con\\%(\s\|\$\\)'   ? 'CmakeOn'             : 'con'

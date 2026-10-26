@@ -126,7 +126,7 @@ function! vim_build#core#toggle_quickfix() abort
   endif
 
   if empty(filter(getwininfo(), 'v:val.quickfix'))
-    copen
+    Copen
     cbottom
   else
     cclose
@@ -175,8 +175,14 @@ function! s:current_file() abort
   return expand('%:p')
 endfunction
 
+" If you don't want the quickfix window to pop up
+" automatically after an operation (you want it only to run 
+" in background), add a bang (!) after the Dispatch!. For example:
+" execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir()) . ' --target mySources'
+" In That case you'll need to run :Copen manually
+
 function! s:run_shell(cmd) abort
-  execute 'Dispatch! sh -c ' . shellescape(a:cmd)
+  execute 'Dispatch sh -c ' . shellescape(a:cmd)
 endfunction
 
 function! vim_build#core#compile_all() abort
@@ -184,7 +190,7 @@ function! vim_build#core#compile_all() abort
     echo "VimBuildState is off"
     return
   endif
-  execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir()) . ' --target mySources'
+  execute 'Dispatch cmake --build ' . fnameescape(s:build_dir()) . ' --target mySources'
 endfunction
 
 function! vim_build#core#compile_current_file() abort
@@ -232,8 +238,26 @@ function! vim_build#core#build_current() abort
     echo "VimBuildState is off"
     return
   endif
-  execute 'Dispatch! cmake --build ' . fnameescape(s:build_dir())
+  execute 'Dispatch cmake --build ' . fnameescape(s:build_dir())
 endfunction
+
+
+
+" For interactivity in the editor. This requires a vim with
+" a term_start() support. This could be checked with
+":echo has('terminal'). 1=> has it; 0=>no
+"
+function! s:run_in_terminal(cmd) abort
+  if !has('terminal')
+    echoerr "This Vim was built without terminal support"
+    return
+  endif
+
+  botright 12new
+  call term_start(a:cmd, {'curwin': 1, 'term_finish': 'open'})
+endfunction
+
+
 
 function! vim_build#core#run_previous_builds() abort
   if !s:is_enabled()
@@ -246,7 +270,8 @@ function! vim_build#core#run_previous_builds() abort
     echo "Executable not found: " . l:exe
     return
   endif
-  execute 'Dispatch ' . fnameescape(l:exe)
+
+  call s:run_in_terminal([l:exe])
 endfunction
 
 function! vim_build#core#build_and_run_current() abort
@@ -255,15 +280,22 @@ function! vim_build#core#build_and_run_current() abort
     return
   endif
 
-  let l:exe = s:exe_path()
-  let l:buildcmd = 'cmake --build ' . s:build_dir()
-  execute 'Dispatch! sh -c ' . shellescape(l:buildcmd . ' && ' . l:exe)
+  let l:cmd = 'cmake --build ' . shellescape(s:build_dir())
+        \ . ' && exec ' . shellescape(s:exe_path())
+
+  call s:run_in_terminal(['sh', '-c', l:cmd])
 endfunction
+
+
+
+
+
+
 
 function! s:clean_build(dir) abort
   let l:prompt = (a:dir =~# 'Debug') ? 'Clean Debug build directory?' : 'Clean Release build directory?'
   if confirm(l:prompt, "&Yes\n&No", 2) == 1
-    execute 'Dispatch! cmake --build ' . fnameescape(a:dir) . ' --target clean'
+    execute 'Dispatch cmake --build ' . fnameescape(a:dir) . ' --target clean'
   endif
 endfunction
 
