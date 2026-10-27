@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 #################################################################
-#	 ||				||
+#	 ||				            ||
 # 	 ||	C++ CMake Init script	||
-#        ||				||
+#    ||				            ||
 ################################################################
 
 set -euo pipefail
@@ -18,7 +18,7 @@ cd -- "$targetDir"
 
 projectName="$(basename "$targetDir")"
 
-mkdir -p bin/Debug bin/Release build/Debug build/Release config include external src/Sources src/Headers data
+mkdir -p bin/Debug bin/Release build/Debug build/Release config include libs src/Sources src/Headers data
 
 cat > src/Sources/__dummy.cpp <<'EOF'
 // Intentionally empty.
@@ -104,6 +104,7 @@ configure_file(include/Config.h.in
 target_include_directories(${projectName}
     PUBLIC  "\${CMAKE_CURRENT_SOURCE_DIR}/include"
     PRIVATE "\${CMAKE_CURRENT_SOURCE_DIR}/src/Headers"
+    PUBLIC  "\${CMAKE_CURRENT_SOURCE_DIR}/libs"
 )
 
 set(gcc_cxx "\$<COMPILE_LANG_AND_ID:CXX,GNU>")

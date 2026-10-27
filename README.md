@@ -195,7 +195,7 @@ project/
 ├── config/
 ├── data/
 ├── include/
-├── external/
+├── libs/
 ├── src/
 │   ├── Headers/
 │   ├── Sources/
@@ -207,7 +207,7 @@ project/
 *   ***config/***: Folder for containing the configuration files
 *   ***data/***: Folder for non-code resources your application needs at runtime, such as images, fonts, configuration files, or 3D models.
 *   ***include/***: Folder for header files (**.h** or **.hpp**).
-*   ***external/***: Folder for external libraries including the source codes and/or pre-compiled library files (**.a**, **.lib**, **.so**, **.dll**) 
+*   ***libs/***: Folder for external libraries including the source codes and/or pre-compiled library files (**.a**, **.lib**, **.so**, **.dll**) 
 *   ***src/***: Folder for local source files (**.cpp**) and local  header files (**.h** or **.hpp**).
 *   ***CMakeLists.txt/***: The main cmake file that contains the overall configurations of your project.
 
