@@ -98,7 +98,7 @@ The boilerplate generator creates:
   - build/Release
   - config
   - include
-  - lib
+  - external
   - src/Sources
   - src/Headers
 
